@@ -28,3 +28,8 @@ export const playerSetup /*: {
     fascists: 3
   },
 };
+
+export const policies = {
+  liberal: 6,
+  fascist: 11
+};

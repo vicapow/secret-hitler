@@ -1,17 +1,38 @@
 // @flow
 
 import fs from 'fs';
-import express from 'express';
 import socketIO from 'socket.io';
 import http from 'http';
-import * as rules from './rules.mjs';
+import express from 'express';
+import next from 'next';
+import { playerSetup, policies } from './rules.mjs';
 import { assert } from './utils.mjs';
 /* :: import type { Game, Player, Phase, Message } from './types.mjs'; */
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
+const port = 3000;
+const dev = process.env.NODE_ENV !== 'production';
+const nextApp = next({dev});
+const nextHandler = nextApp.getRequestHandler();
+
 let game /*: Game */ = initGame();
+
+function createPolicies(policies) {
+  const cards = [];
+  let id = 0;
+  for (let i = 0; i < policies.fascist; i++) {
+    id = id + 1;
+    cards.push({ id, type: 'fascist', location: 'deck' });
+  }
+  for (let i = 0; i < policies.liberal; i++) {
+    id = id + 1;
+    cards.push({ id, type: 'liberal', location: 'deck' });
+  }
+  return cards;
+}
 
 function initGame()/*: Game */ {
   try {
@@ -27,6 +48,7 @@ function initGame()/*: Game */ {
       electedPresident: undefined,
       electedChancellor: undefined,
       players: [],
+      policies: createPolicies(polices)
     };
   }
 }
@@ -66,7 +88,7 @@ function startGame() {
   const hitler = getRandomUnmatchedPlayer(game);
   hitler.role = 'fascist';
   game.hitler = hitler.id;
-  const numFascists = rules.playerSetup[String(game.players.length)].fascists;
+  const numFascists = playerSetup[String(game.players.length)].fascists;
   for (let i = 0; i < numFascists; i++) {
     getRandomUnmatchedPlayer(game).role = 'fascist';
   }
@@ -76,7 +98,7 @@ function startGame() {
     }
   });
   game.isStarted = true;
-  game.phase = 'ELECTION_START';
+  game.phase = 'VIEW_ROLES';
   game.presidentialCandidate = getRandomPlayer(game).id;
 }
 
@@ -136,21 +158,59 @@ io.on('connection', socket => {
       const player = getPlayer(playerId, game);
       player.revealRole = !player.revealRole;
       player.seenRole = true;
+      if (game.phase === 'VIEW_ROLES') {
+        const unseenPlayers = game.players.filter(player => !player.seenRole);
+        if (unseenPlayers.length === 0) {
+          // All players have seen their role. move to election phase.
+          game.phase = 'ELECTION_START';
+          if (game.chancellorCandidate === undefined) {
+            game.chancellorCandidate = getRandomPlayer(game).id;
+          }
+        }
+      }
+    } else if (message.type === 'SELECT_CHANCELLOR_CANDIDATE') {
+      const { playerId } = message.body;
+      game.chancellorCandidate = playerId;
+      game.phase = 'VOTE_ON_TICKET';
+    } else if (message.type === 'VOTE_ON_TICKET') {
+      const { playerId, vote } = message.body;
+      const player = getPlayer(playerId, game);
+      player.vote = vote;
+      const notVoted = game.players.filter(player => player.vote === undefined);
+      if (notVoted.length === 0) {
+        game.phase = 'REVEAL_TICKET_RESULTS';
+        setTimeout(() => {
+          const jas = game.players.reduce((jas /* :  number */, player) => {
+            return player.vote === 'ja' ? (jas + 1) : jas;
+          }, 0);
+          const win = jas > (game.players.length / 2);
+          if (win) {
+            game.phase = 'LEGISLATIVE_SESSION_START';
+            game.electedChancellor = game.chancellorCandidate;
+            game.electedPresident = game.presidentialCandidate;
+            game.chancellorCandidate = undefined;
+            game.presidentialCandidate = undefined;
+          } else {
+            game.phase = 'VOTE_ON_TICKET';
+          }
+          game.players.forEach(player => { player.vote = undefined; });
+          broadcastGameState();
+        }, 4000);
+      }
     }
     broadcastGameState();
   });
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(process.cwd() + '/index.html')
+nextApp.prepare().then(() => {
+  app.get('*', (req, res) => {
+    return nextHandler(req, res);
+  });
+  console.log('listen to server');
+  server.listen(port, (err) => {
+    if (err) throw err;
+    console.log(`> Ready on http://localhost:${port}`);
+  });
 });
 
-app.get('/client.mjs', (req, res) => {
-  res.sendFile(process.cwd() + '/client.mjs')
-});
 
-app.get('/utils.mjs', (req, res) => {
-  res.sendFile(process.cwd() + '/utils.mjs')
-});
-
-server.listen(3000)

@@ -8,13 +8,20 @@ export type Player = {|
   revealRole: boolean,
   seenRole: boolean,
   role: 'fascist' | 'liberal' | void,
-  vote: 'ja' | 'nein' | void
-|}
+  vote: 'ja' | 'nein' | void,
+|};
+
+export type Policy = {|
+  id: string,
+  type: 'fascist' | 'liberal',
+  location: 'deck' | 'president' | 'chancellor' | 'enacted'
+|};
 
 export type Game = {|
   isStarted: boolean,
   isVoting: boolean,
   players: Array<Player>,
+  policies: Array<Policy>,
   hitler: string | void,
   phase: Phase | void,
   presidentialCandidate: string | void,
@@ -25,12 +32,12 @@ export type Game = {|
 
 // Round phases
 export type Phase =
-  | 'ELECTION_START'
+  | 'VIEW_ROLES'
   | 'SELECT_CHANCELLOR_CANDIDATE'
+  | 'ELECTION_START'
   | 'VOTE_ON_TICKET'
   | 'REVEAL_TICKET_RESULTS'
   | 'TICKET_FAIL'
-  | 'TICKET_SUCCESS'
   | 'LEGISLATIVE_SESSION_START'
   | 'EXECUTION_ACTION_PHASE';
 
@@ -41,5 +48,7 @@ export type Message =
   | {| type: 'PLAYER_JOIN', body: {| playerId: string |} |}
   | {| type: 'REVEAL_ROLE', body: {| playerId: string |} |}
   | {| type: 'UPDATE_GAME_STATE', body: {| game: Game |} |}
+  | {| type: 'SELECT_CHANCELLOR_CANDIDATE', body: {| playerId: string |} |}
+  | {| type: 'VOTE_ON_TICKET', body: {| playerId: string, vote: 'ja' | 'nein' |} |}
 
 */

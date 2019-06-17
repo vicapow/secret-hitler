@@ -1,44 +1,46 @@
 {
   "isStarted": true,
   "isVoting": false,
+  "policies": [],
   "players": [
     {
       "id": "2",
-      "name": "Player 1",
+      "name": "Player 2",
       "role": "fascist",
       "revealRole": true,
       "seenRole": true
     },
     {
       "id": "4",
-      "name": "Player 2",
+      "name": "Lisa",
       "role": "liberal",
-      "revealRole": true,
+      "revealRole": false,
       "seenRole": true
     },
     {
       "id": "5",
-      "name": "Player 3",
+      "name": "Victor",
       "role": "fascist",
       "revealRole": true,
       "seenRole": true
     },
     {
       "id": "3",
-      "name": "Player 4",
+      "name": "Player 3",
       "role": "liberal",
       "revealRole": true,
       "seenRole": true
     },
     {
       "id": "1",
-      "name": "Player 5",
+      "name": "Player 1",
       "role": "liberal",
-      "revealRole": true,
+      "revealRole": false,
       "seenRole": true
     }
   ],
   "hitler": "5",
-  "phase": "ELECTION_START",
-  "presidentialCandidate": "1"
+  "phase": "LEGISLATIVE_SESSION_START",
+  "electedChancellor": "4",
+  "electedPresident": "1"
 }
