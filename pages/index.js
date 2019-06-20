@@ -146,6 +146,7 @@ function Hand({
     </div>
     { player.revealRole ? <div>
       <span>{getRoleMessage(player, game)}</span>
+      <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${player.role}.png`} />
     </div> : null}
     { game.phase === 'ELECTION_START' && player.id === game.presidentialCandidate ? <div>
       You're the presidential candidate. Pick your chancellor candidate.
@@ -166,29 +167,44 @@ function Hand({
       <button onClick={() => voteOnTicket(playerId, 'nein')}>Nien</button>
     </div> : null}
     {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
+    playerId {playerId}
   </div>;
 }
+
+const SecretHitlerLogo = () => <div style={{width: '100%', height: '100%', position: 'relative'}}>
+  <img style={{
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain'
+  }} src="static/secret-hitler-logo-wide.png" />
+  <div style={{position: 'relative', left: 0, top: '-50%', width: '100%', height: 1}}>
+    <span style={{position: 'absolute', right: 8, width: '100%', textAlign: 'right', top: 210 }}>2016–2019 GOAT, WOLF, & CABBAGE ˙ CC SA–BY–NC 4.0 ˙ SECRETHITLERGAME@GMAIL.COM</span>
+  </div>
+</div>;
 
 function Board({state}: {| state: State |}) {
   const { game } = state;
   if (!game) {
-    return <div></div>;
+    return <SecretHitlerLogo />;
   }
   if (game.phase === 'VIEW_ROLES') {
     return (
-      <div>
-        <h1>Everyone view your role!</h1>
-        <ul>
-          {game.players.map(player => {
-            return (<li>
-              <span>{player.name}</span>
-              <span> </span>
-              <span>{player.seenRole ? '🤭' : '🙈'}</span>
-            </li>);
-          })}
-        </ul>
-        {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
-      </div>
+      <BoarderContainer state={state}>
+        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{flexGrow: 1, textAlign: 'center'}}>
+            <h1>Everyone view your role!</h1>
+            <div>
+              {game.players.map(player => {
+                return <div>
+                  <h2>{`${player.seenRole ? '🤭' : '🙈'} ${player.name}`}</h2>
+                </div>;
+              })}
+            </div>
+          </div>
+          <div style={{flexGrow: 1}}></div>
+        </div>
+      </BoarderContainer>
     );
   }
   if (game.phase === 'ELECTION_START') {
@@ -197,24 +213,29 @@ function Board({state}: {| state: State |}) {
       throw new Error(`No presidential candidate`);
     }
     return (
-      <div>
-        <h1> Election </h1>
-        <p>
-          President candidate {presidentialCandidate.name}, please select your chancellor candidate.
-        </p>
-        {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
-      </div>
+      <BoarderContainer state={state}>
+        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{flexGrow: 1, textAlign: 'center'}}>
+            <h1 style={{fontSize: 100}}> Election </h1>
+            <h2>President candidate {presidentialCandidate.name}, please select your chancellor candidate.</h2>
+          </div>
+        </div>
+      </BoarderContainer>
     );
   }
   if (game.phase === 'VOTE_ON_TICKET') {
     return (
-      <div>
-        <h1> Vote on ticket </h1>
-        <p>
-          {game.players.filter(player => player.vote === undefined).length} player(s) need to vote.
-        </p>
-        {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
-      </div>
+      <BoarderContainer state={state}>
+        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{flexGrow: 1, textAlign: 'center'}}>
+            <h1 style={{fontSize: 100}}> Vote on ticket </h1>
+            <h2> {game.players.filter(player => player.vote === undefined).length} player(s) still need to vote.</h2>
+          </div>
+          <div style={{flexGrow: 1}}></div>
+        </div>
+      </BoarderContainer>
     )
   }
   if (game.phase === 'REVEAL_TICKET_RESULTS') {
@@ -223,14 +244,27 @@ function Board({state}: {| state: State |}) {
     }, 0);
     const win = jas > (game.players.length / 2);
     return (
-      <div>
-        <h1> { win ? 'Success' : 'Failure' }</h1>
-        <ul>
-          {game.players.map(player => {
-            return <li>{player.name} voted {player.vote}</li>
-          })}
-        </ul>
-      </div>
+      <BoarderContainer state={state}>
+        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{flexGrow: 1, textAlign: 'center'}}>
+            <h1 style={{fontSize: 100}}> { win ? 'Success' : 'Failure' }</h1>
+            <div style={{display: 'flex', flexDirection: 'row', width: '100%', height: '100%'}}>
+              <div style={{flexGrow: 1}}></div>
+              <div style={{textAlign: 'left'}}>
+                {game.players.map(player => {
+                  return <div style={{fontSize: 20}}>
+                    <img style={{verticalAlign: 'middle', width: 80}} src={`static/${player.vote}.png`} />
+                    {player.name}
+                  </div>
+                })}
+              </div>
+              <div style={{flexGrow: 1}}></div>
+            </div>
+          </div>
+          <div style={{flexGrow: 1}}></div>
+        </div>
+      </BoarderContainer>
     );
   }
   if (game.phase === 'LEGISLATIVE_SESSION_START') {
@@ -240,15 +274,85 @@ function Board({state}: {| state: State |}) {
       throw new Error(`Chancellor or president is not set`);
     }
     return (
-      <div>
-        <h1> Legislative session has started with  Chancellor {chancellor.name} and President {president.name} </h1>
-      </div>
+      <BoarderContainer state={state}>
+        <div style={{textAlign: 'center', marginTop: '25%'}}>
+          <h1> Legislative session has started with  Chancellor {chancellor.name} and President {president.name} </h1>
+        </div>
+      </BoarderContainer>
     );
   }
-  return <div>
-    Board
-    {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
-  </div>;
+  return <BoarderContainer state={state}>
+    <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+      <div style={{flexGrow: 1}}><SecretHitlerLogo /></div>
+      <div style={{flexGrow: 2, textAlign: 'center', fontSize: 50, fontWeight: 'bold'}}>
+        { canJoin(state) ?
+          <div>{(canStart(state) ? ` We have enough players to begin but a few more can't hurt.` : ` Still looking for ${5 - game.players.length} more players.`)}</div>
+        : <div> We're full! Someone start the game.</div> }
+      </div>
+      <div style={{flexGrow: 4}}>
+        <div style={{display: 'flex', flexDirection: 'row'}}>
+          <div style={{flexGrow: 3}}></div>
+          <div style={{flexGrow: 1, fontSize: 50}}>
+            <div>
+              { game.players.map(player => {
+                return <div>
+                  <Bird />
+                  <span> </span>
+                  {player.name}
+                </div>;
+              })}
+            </div>
+          </div>
+          <div style={{flexGrow: 3}}></div>
+        </div>
+      </div>
+    </div>
+  </BoarderContainer>;
+}
+
+const Bird = () => {
+  return <svg height="39.2" width="43.2" viewBox="0 0 21.6 19.6" style={{transform: `rotate(-90deg)`}}>
+    <path d="M21.4,18.6l-0.4-1c0-0.1,0-0.1,0-0.2l-2.1-4.7l0,0l-0.3-0.6l-0.6-1.2c-0.2-0.5-0.5-0.9-0.9-1.2l0,0l-4-2.5 c0-0.2,0-0.4-0.1-0.6l3.7-1.3L18,4.5l3.1-4l-0.3-0.5l-4.2,2.5l-0.8,0.2l-2.6,0.6c0.2-0.4,0.4-0.8,0.6-1.2c0-0.9-0.7-1.6-1.6-1.5 c0,0,0,0,0,0c-0.2,0-0.4,0-0.6,0.1l0,0l-2,0.3l1,0.8L8.4,2.2C7.3,2.4,6.4,3.3,6,4.4L5.4,6.6l0,0C5.3,6.8,5.2,7.1,5.2,7.4l-2,0.2 c-0.1,0-0.2,0-0.4,0c0,0,0,0-0.1,0.1l-1,0.1l-1.8,2.2v1.6h0.2c0,0.2,0,0.3,0.2,0.4l1-0.1l-1,0.6C0.1,12.7,0,12.9,0,13.2l0,0l0.3,1.2 c0,0.1,0,0.3,0.1,0.4l0,0h0.1c0,0,0.1,0,0.1,0l1.4,0.4L2,14.9c0.1-0.1,0.3-0.1,0.4-0.2L6,11.1l2-1.9l0.7,1.5 c0.1,0.3,0.3,0.5,0.6,0.5l0.3,0.3L10,12c0.1,0.3,0.5,0.5,0.9,0.4c0,0,0.1,0,0.1-0.1l0,0l0.4,0.8c0.2,0.4,0.7,0.6,1.2,0.4l0.3,0.2 l0.3,0.6c0.2,0.3,0.6,0.5,0.9,0.3l0.8,0.6l0.1,0.2c0.1,0.2,0.3,0.3,0.5,0.3l0.6,0.5l2.3,1.9l1.8,1.4c0.4,0.3,0.8,0.2,1.1-0.2 C21.4,19,21.4,18.8,21.4,18.6z"></path>
+  </svg>
+};
+
+class BoarderContainer extends Component<any, any> {
+  constructor() {
+    super();
+    this.state = {
+      width: 0,
+      height: 0,
+    }
+  }
+  componentDidMount() {
+    window.onresize = () => {
+      this.setState({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+    }
+  }
+  render() {
+    return <div style={{
+      margin: 0,
+      fontFamily: 'Helvetica',
+      width: window.innerWidth,
+      height: window.innerHeight,
+      overflow: 'hidden',
+      position: 'absolute',
+    }}>
+      {this.props.children}
+      {this.props.state.isDebug ?
+        <div style={{left: 0, top: 0, width: 300, height: '100%', position: 'absolute', overflow: 'scroll'}}>
+          <pre>{JSON.stringify(this.props.state.game, null, 2)}</pre>
+        </div> : null}
+      <style global jsx>{`
+        body {
+          margin: 0;
+        }
+      `}</style>
+    </div>;
+  }
 }
 
 function checkIsMobile() {

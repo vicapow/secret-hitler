@@ -1,46 +1,137 @@
 {
   "isStarted": true,
   "isVoting": false,
-  "policies": [],
   "players": [
-    {
-      "id": "2",
-      "name": "Player 2",
-      "role": "fascist",
-      "revealRole": true,
-      "seenRole": true
-    },
-    {
-      "id": "4",
-      "name": "Lisa",
-      "role": "liberal",
-      "revealRole": false,
-      "seenRole": true
-    },
-    {
-      "id": "5",
-      "name": "Victor",
-      "role": "fascist",
-      "revealRole": true,
-      "seenRole": true
-    },
     {
       "id": "3",
       "name": "Player 3",
-      "role": "liberal",
-      "revealRole": true,
-      "seenRole": true
+      "revealRole": false,
+      "seenRole": true,
+      "role": "fascist",
+      "vote": "ja"
     },
     {
       "id": "1",
       "name": "Player 1",
-      "role": "liberal",
       "revealRole": false,
-      "seenRole": true
+      "seenRole": true,
+      "role": "liberal",
+      "vote": "ja"
+    },
+    {
+      "id": "2",
+      "name": "Player 2",
+      "revealRole": false,
+      "seenRole": true,
+      "role": "liberal",
+      "vote": "ja"
+    },
+    {
+      "id": "4",
+      "name": "Player 4",
+      "revealRole": false,
+      "seenRole": true,
+      "role": "liberal",
+      "vote": "ja"
+    },
+    {
+      "id": "5",
+      "name": "Vic",
+      "revealRole": false,
+      "seenRole": true,
+      "role": "fascist",
+      "vote": "nein"
+    }
+  ],
+  "policies": [
+    {
+      "id": "1",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "2",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "3",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "4",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "5",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "6",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "7",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "8",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "9",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "10",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "11",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "12",
+      "type": "liberal",
+      "location": "deck"
+    },
+    {
+      "id": "13",
+      "type": "liberal",
+      "location": "deck"
+    },
+    {
+      "id": "14",
+      "type": "liberal",
+      "location": "deck"
+    },
+    {
+      "id": "15",
+      "type": "liberal",
+      "location": "deck"
+    },
+    {
+      "id": "16",
+      "type": "liberal",
+      "location": "deck"
+    },
+    {
+      "id": "17",
+      "type": "liberal",
+      "location": "deck"
     }
   ],
   "hitler": "5",
-  "phase": "LEGISLATIVE_SESSION_START",
-  "electedChancellor": "4",
-  "electedPresident": "1"
+  "phase": "REVEAL_TICKET_RESULTS",
+  "electedChancellor": "1",
+  "electedPresident": "5"
 }

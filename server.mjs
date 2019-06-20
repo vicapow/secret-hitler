@@ -12,6 +12,7 @@ import { assert } from './utils.mjs';
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+const removeWhenLeavingPreGame = false;
 
 const port = 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -25,11 +26,11 @@ function createPolicies(policies) {
   let id = 0;
   for (let i = 0; i < policies.fascist; i++) {
     id = id + 1;
-    cards.push({ id, type: 'fascist', location: 'deck' });
+    cards.push({ id: String(id), type: 'fascist', location: 'deck' });
   }
   for (let i = 0; i < policies.liberal; i++) {
     id = id + 1;
-    cards.push({ id, type: 'liberal', location: 'deck' });
+    cards.push({ id: String(id), type: 'liberal', location: 'deck' });
   }
   return cards;
 }
@@ -48,7 +49,7 @@ function initGame()/*: Game */ {
       electedPresident: undefined,
       electedChancellor: undefined,
       players: [],
-      policies: createPolicies(polices)
+      policies: createPolicies(policies)
     };
   }
 }
@@ -63,7 +64,7 @@ function broadcastGameState() {
 }
 
 function getRandomUnmatchedPlayer(game) {
-  const unmatched = game.players.filter(player => player.role === '');
+  const unmatched = game.players.filter(player => player.role === undefined);
   const randomIndex = Math.floor(Math.random() * unmatched.length);
   return unmatched[randomIndex];
 }
@@ -112,9 +113,11 @@ io.on('connection', socket => {
     if (!game.isStarted) {
       // The game hasn't begin. Go ahead and remove this clients
       // player.
-      game.players = game.players.filter(player => {
-        player.id !== socket.playerId;
-      });
+      if (removeWhenLeavingPreGame) {
+        game.players = game.players.filter(player => {
+          player.id !== socket.playerId;
+        });
+      }
       broadcastGameState();
     }
   });
