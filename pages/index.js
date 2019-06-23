@@ -160,12 +160,12 @@ function Hand({
   const role = player.role;
   return <div>
     <button onClick={onStart}>Start</button>
+    <div>
+      <span>name</span>
+      <input type="text" onChange={onUpdateName} value={player.name}></input>
+    </div>
     { role !== undefined ? <div>
       <button onClick={onRevealRole}>Reveal role</button>
-      <div>
-        <span>name</span>
-        <input type="text" onChange={onUpdateName} value={player.name}></input>
-      </div>
       { player.revealRole ? <div>
         <span>{getRoleMessage(player, game)}</span>
         <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${role}.png`} />
@@ -375,12 +375,24 @@ function Board({state}: {| state: State |}) {
     );
   }
   if (game.phase.name === 'REVEAL_NEW_POLICY') {
+    const latestPolicy = game.policies.reduce((latest, policy) => {
+      if (policy.location !== 'facist' && policy.location !== 'liberal') {
+        return latest;
+      }
+      if (!latest || policy.timestamp > latest.timestamp) {
+        return policy;
+      }
+      return latest;
+    }, undefined);
     return (
       <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
-          <div style={{flexGrow: 1}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1> Reveal new policy! </h1>
+            <img src={`static/${latestPolicy.type}-policy.png`} />
           </div>
+          <div style={{flexGrow: 1}}></div>
         </div>;
       }} />
     );

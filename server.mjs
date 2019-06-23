@@ -29,16 +29,16 @@ function update(state, message, now) {
   return nextState;
 }
 
-function createPolicies(policies) {
+function createPolicies(policies, now) {
   const cards = [];
   let id = 0;
   for (let i = 0; i < policies.fascist; i++) {
     id = id + 1;
-    cards.push({ id: String(id), type: 'fascist', location: 'deck' });
+    cards.push({ id: String(id), type: 'fascist', location: 'deck', timestamp: now });
   }
   for (let i = 0; i < policies.liberal; i++) {
     id = id + 1;
-    cards.push({ id: String(id), type: 'liberal', location: 'deck' });
+    cards.push({ id: String(id), type: 'liberal', location: 'deck', timestamp: now });
   }
   return cards;
 }
@@ -57,7 +57,7 @@ function initGame(now /*: number */)/*: Game */ {
       electedPresident: undefined,
       electedChancellor: undefined,
       players: [],
-      policies: shuffle(createPolicies(policies))
+      policies: shuffle(createPolicies(policies, now))
     };
   }
 }

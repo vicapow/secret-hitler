@@ -164,10 +164,10 @@ export default function update(game /* : Game */, message /* : Message */, now /
       phase: { name: 'CHANCELLOR_POLICY_TURN', timestamp: now },
       policies: [...policies.map((policy /*: Policy */) => {
         if (policy.location === 'president') {
-          return { ...policy, location: 'chancellor' };
+          return { ...policy, location: 'chancellor', timestamp: now };
         }
         return policy;
-      }), { ...discarded, location: 'discard' }]
+      }), { ...discarded, location: 'discard', timestamp: now }]
     };
   } else if (message.type === 'CHANCELLOR_DISCARD_POLICY') {
     const index = game.policies.findIndex(policy => policy.id === message.body.policyId);
@@ -179,11 +179,12 @@ export default function update(game /* : Game */, message /* : Message */, now /
         if (policy.location === 'chancellor') {
           return {
             ...policy,
-            location: policy.type
+            location: policy.type,
+            timestamp: now,
           };
         }
         return policy;
-      }), { ...discarded, location: 'discard' } ]
+      }), { ...discarded, location: 'discard', timestamp: now } ]
     }
   }
   return game;

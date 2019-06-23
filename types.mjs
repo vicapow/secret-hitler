@@ -14,7 +14,8 @@ export type Player = $ReadOnly<{|
 export type Policy = $ReadOnly<{|
   id: string,
   type: 'fascist' | 'liberal',
-  location: 'deck' | 'president' | 'chancellor' | 'fascist' | 'liberal' | 'discard'
+  location: 'deck' | 'president' | 'chancellor' | 'fascist' | 'liberal' | 'discard',
+  timestamp: number,
 |}>;
 
 export type Game = $ReadOnly<{|
