@@ -376,7 +376,7 @@ function Board({state}: {| state: State |}) {
   }
   if (game.phase.name === 'REVEAL_NEW_POLICY') {
     const latestPolicy = game.policies.reduce((latest, policy) => {
-      if (policy.location !== 'facist' && policy.location !== 'liberal') {
+      if (policy.location !== 'fascist' && policy.location !== 'liberal') {
         return latest;
       }
       if (!latest || policy.timestamp > latest.timestamp) {
@@ -391,6 +391,68 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1> Reveal new policy! </h1>
             <img src={`static/${latestPolicy.type}-policy.png`} />
+          </div>
+          <div style={{flexGrow: 1}}></div>
+        </div>;
+      }} />
+    );
+  }
+  if (game.phase.name === 'SHUFFLE_DECK') {
+    return (
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{flexGrow: 1, textAlign: 'center'}}>
+            <h1> Shuffling deck... </h1>
+          </div>
+          <div style={{flexGrow: 1}}></div>
+        </div>;
+      }} />
+    );
+  }
+  if (game.phase.name === 'REVEAL_POLICIES') {
+    const liberalPolicies = game.policies.filter(policy => policy.location === 'liberal');
+    const fascistPolicies = game.policies.filter(policy => policy.location === 'fascist');
+    return (
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{flexGrow: 1, textAlign: 'center'}}>
+            <h1> Reveal policies </h1>
+            <div style={{display: 'flex', flexDirection: 'row', height: '100%'}}>
+              <div style={{flexGrow: 1, width: '60%'}}></div>
+              <div style={{flexGrow: 1, width: '100%'}}>
+                <div style={{position: 'relative'}}>
+                  <img src="static/liberal-board.png" style={{width: '100%'}} />
+                  { liberalPolicies.length >= 1 ?
+                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '16.5%', top: '24%', width: '13%' }}/> : null }
+                  { liberalPolicies.length >= 2 ?
+                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '30.1%', top: '24%', width: '13%' }}/> : null }
+                  { liberalPolicies.length >= 3 ?
+                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '43.8%', top: '24%', width: '13%' }}/> : null }
+                  { liberalPolicies.length >= 4 ?
+                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '57.2%', top: '24%', width: '13%' }}/> : null }
+                  { liberalPolicies.length >= 5 ?
+                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '70.9%', top: '24%', width: '13%' }}/> : null }
+                </div>
+                <div style={{position: 'relative'}}>
+                  <img src="static/fascist-board-56.png" style={{width: '100%'}} />
+                  { fascistPolicies.length >= 1 ?
+                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '9.5%', top: '24%', width: '13%' }}/> : null }
+                  { fascistPolicies.length >= 2 ?
+                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '23.1%', top: '24%', width: '13%' }}/> : null }
+                  { fascistPolicies.length >= 3 ?
+                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '36.8%', top: '24%', width: '13%' }}/> : null }
+                  { fascistPolicies.length >= 4 ?
+                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '50.2%', top: '24%', width: '13%' }}/> : null }
+                  { fascistPolicies.length >= 5 ?
+                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '63.9%', top: '24%', width: '13%' }}/> : null }
+                  { fascistPolicies.length >= 6 ?
+                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '77.9%', top: '24%', width: '13%' }}/> : null }
+                </div>
+              </div>
+              <div style={{flexGrow: 1, width: '60%'}}></div>
+            </div>
           </div>
           <div style={{flexGrow: 1}}></div>
         </div>;

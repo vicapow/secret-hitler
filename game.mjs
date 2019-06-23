@@ -3,7 +3,7 @@
 // This is the game state machine. The game state can only be changed through `event` messages.
 
 import { playerSetup, policies } from './rules.mjs';
-import { assert, pluckRandom, pluck } from './utils.mjs';
+import { assert, pluckRandom, pluck, shuffle } from './utils.mjs';
 /* :: import type { Game, Message, Player, Policy } from './types'; */
 
 export default function update(game /* : Game */, message /* : Message */, now /* : number */) /* : Game */ {
@@ -121,7 +121,7 @@ export default function update(game /* : Game */, message /* : Message */, now /
           ...game,
           phase: {
             name: 'LEGISLATIVE_SESSION_START',
-            timestamp: Date.now()
+            timestamp: now
           },
           policies: game.policies.reduce((accum, policy) => {
             let newPolicy = policy;
@@ -145,7 +145,7 @@ export default function update(game /* : Game */, message /* : Message */, now /
           ...game,
           phase: {
             name: 'VOTE_ON_TICKET',
-            timestamp: Date.now()
+            timestamp: now
           }
         };
       }
@@ -155,6 +155,33 @@ export default function update(game /* : Game */, message /* : Message */, now /
           return { ...player, vote: undefined };
         })
       };
+    } else if (game.phase.name === 'REVEAL_NEW_POLICY' &&
+      (now  - game.phase.timestamp > 4000)) {
+      // check if we need to shuffle the deck.
+      const deck = game.policies.filter(policy => policy.location === 'deck');
+      if (deck.length < 3) {
+        game = {
+          ...game,
+          phase: { name: 'SHUFFLE_DECK', timestamp: now }
+        };
+      } else {
+        game = update(game, {
+          type: 'DECK_READY',
+        }, now);
+      }
+    } else if (game.phase.name === 'SHUFFLE_DECK' &&
+      (now  - game.phase.timestamp > 4000)) {
+        game = update({
+          ...game,
+          policies: shuffle(game.policies.map(policy => {
+            if (policy.location === 'discard') {
+              return { ...policy, location: 'deck', timestamp: now };
+            }
+            return policy;
+          })),
+        }, {
+          type: 'DECK_READY',
+        }, now);
     }
   } else if (message.type === 'PRESIDENT_DISCARD_POLICY') {
     const index = game.policies.findIndex(policy => policy.id === message.body.policyId);
@@ -186,6 +213,11 @@ export default function update(game /* : Game */, message /* : Message */, now /
         return policy;
       }), { ...discarded, location: 'discard', timestamp: now } ]
     }
+  } else if (message.type === 'DECK_READY') {
+    game = {
+      ...game,
+      phase: { name: 'REVEAL_POLICIES', timestamp: now },
+    };
   }
   return game;
 }

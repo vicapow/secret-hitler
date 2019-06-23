@@ -44,7 +44,9 @@ export type Phase =
   | 'TICKET_FAIL'
   | 'LEGISLATIVE_SESSION_START'
   | 'CHANCELLOR_POLICY_TURN'
-  | 'REVEAL_NEW_POLICY';
+  | 'REVEAL_NEW_POLICY'
+  | 'SHUFFLE_DECK'
+  | 'REVEAL_POLICIES'
 
 export type Message =
   | $ReadOnly<{| type: 'UPDATE_PLAYER_NAME', body: $ReadOnly<{| name: string, playerId: string |}> |}>
@@ -58,5 +60,6 @@ export type Message =
   | $ReadOnly<{| type: 'VOTE_ON_TICKET', body: $ReadOnly<{| playerId: string, vote: 'ja' | 'nein' |}> |}>
   | $ReadOnly<{| type: 'PRESIDENT_DISCARD_POLICY', body: $ReadOnly<{| policyId: string |}> |}>
   | $ReadOnly<{| type: 'CHANCELLOR_DISCARD_POLICY', body: $ReadOnly<{| policyId: string |}> |}>
+  | $ReadOnly<{| type: 'DECK_READY' |}>
 
 */
