@@ -1,58 +1,65 @@
 {
   "isStarted": true,
+  "hitler": "2",
+  "phase": {
+    "name": "LEGISLATIVE_SESSION_START",
+    "timestamp": 1561274300758
+  },
   "isVoting": false,
+  "electedPresident": "2",
+  "electedChancellor": "5",
   "players": [
     {
-      "id": "3",
-      "name": "Player 3",
+      "id": "2",
+      "name": "Player 2",
+      "role": "fascist",
       "revealRole": false,
-      "seenRole": true,
-      "role": "fascist"
+      "seenRole": true
+    },
+    {
+      "id": "5",
+      "name": "Player 5",
+      "role": "fascist",
+      "revealRole": false,
+      "seenRole": true
     },
     {
       "id": "1",
       "name": "Player 1",
+      "role": "liberal",
       "revealRole": false,
-      "seenRole": true,
-      "role": "liberal"
+      "seenRole": true
     },
     {
-      "id": "2",
-      "name": "Player 2",
+      "id": "3",
+      "name": "Player 3",
+      "role": "liberal",
       "revealRole": false,
-      "seenRole": true,
-      "role": "liberal"
+      "seenRole": true
     },
     {
       "id": "4",
       "name": "Player 4",
+      "role": "liberal",
       "revealRole": false,
-      "seenRole": true,
-      "role": "liberal"
-    },
-    {
-      "id": "5",
-      "name": "Vic",
-      "revealRole": false,
-      "seenRole": true,
-      "role": "fascist"
+      "seenRole": true
     }
   ],
   "policies": [
     {
       "id": "1",
       "type": "fascist",
-      "location": "deck"
+      "location": "president"
+    },
+    {
+      "id": "9",
+      "type": "fascist",
+      "location": "president"
     },
     {
       "id": "2",
       "type": "fascist",
-      "location": "deck"
-    },
-    {
-      "id": "3",
-      "type": "fascist",
-      "location": "deck"
+      "location": "president"
     },
     {
       "id": "4",
@@ -60,48 +67,8 @@
       "location": "deck"
     },
     {
-      "id": "5",
-      "type": "fascist",
-      "location": "deck"
-    },
-    {
-      "id": "6",
-      "type": "fascist",
-      "location": "deck"
-    },
-    {
-      "id": "7",
-      "type": "fascist",
-      "location": "deck"
-    },
-    {
-      "id": "8",
-      "type": "fascist",
-      "location": "deck"
-    },
-    {
-      "id": "9",
-      "type": "fascist",
-      "location": "deck"
-    },
-    {
-      "id": "10",
-      "type": "fascist",
-      "location": "deck"
-    },
-    {
       "id": "11",
       "type": "fascist",
-      "location": "deck"
-    },
-    {
-      "id": "12",
-      "type": "liberal",
-      "location": "deck"
-    },
-    {
-      "id": "13",
-      "type": "liberal",
       "location": "deck"
     },
     {
@@ -115,21 +82,54 @@
       "location": "deck"
     },
     {
+      "id": "6",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "5",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "3",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "13",
+      "type": "liberal",
+      "location": "deck"
+    },
+    {
       "id": "16",
       "type": "liberal",
+      "location": "deck"
+    },
+    {
+      "id": "7",
+      "type": "fascist",
+      "location": "deck"
+    },
+    {
+      "id": "10",
+      "type": "fascist",
       "location": "deck"
     },
     {
       "id": "17",
       "type": "liberal",
       "location": "deck"
+    },
+    {
+      "id": "12",
+      "type": "liberal",
+      "location": "deck"
+    },
+    {
+      "id": "8",
+      "type": "fascist",
+      "location": "deck"
     }
-  ],
-  "hitler": "5",
-  "phase": {
-    "name": "LEGISLATIVE_SESSION_START",
-    "timestamp": 1561254343805
-  },
-  "electedChancellor": "2",
-  "electedPresident": "1"
+  ]
 }

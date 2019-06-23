@@ -7,6 +7,7 @@ import express from 'express';
 import next from 'next';
 import { playerSetup, policies } from './rules.mjs';
 import originalUpdate from './game.mjs';
+import { shuffle } from './utils.mjs';
 /* :: import type { Game, Player, Phase, Message } from './types.mjs'; */
 
 const app = express();
@@ -56,7 +57,7 @@ function initGame(now /*: number */)/*: Game */ {
       electedPresident: undefined,
       electedChancellor: undefined,
       players: [],
-      policies: createPolicies(policies)
+      policies: shuffle(createPolicies(policies))
     };
   }
 }

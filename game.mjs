@@ -3,7 +3,7 @@
 // This is the game state machine. The game state can only be changed through `event` messages.
 
 import { playerSetup, policies } from './rules.mjs';
-import { assert } from './utils.mjs';
+import { assert, pluckRandom } from './utils.mjs';
 /* :: import type { Game, Message, Player } from './types'; */
 
 export default function update(game /* : Game */, message /* : Message */, now /* : number */) /* : Game */ {
@@ -123,6 +123,18 @@ export default function update(game /* : Game */, message /* : Message */, now /
             name: 'LEGISLATIVE_SESSION_START',
             timestamp: Date.now()
           },
+          policies: game.policies.reduce((accum, policy) => {
+            let newPolicy = policy;
+            let found = accum.found;
+            if (policy.location === 'deck' && accum.found < 3) {
+              found = found + 1;
+              newPolicy = {
+                ...policy,
+                location: 'president'
+              };
+            }
+            return { found, policies: [...accum.policies, newPolicy] };
+          }, { found: 0, policies: []}).policies,
           electedChancellor: game.chancellorCandidate,
           electedPresident: game.presidentCandidate,
           chancellorCandidate: undefined,
@@ -153,12 +165,6 @@ function getRandomPlayer(game) {
   return game.players[randomIndex];
 }
 
-function pluckRandom /* :: <T> */(array /*: $ReadOnlyArray<T> */) /* : [T, $ReadOnlyArray<T>] */ {
-  const randomIndex = Math.floor(Math.random() * array.length);
-  const resultArray = [...array.slice(0, randomIndex), ...array.slice(randomIndex + 1) ];
-  return [array[randomIndex], resultArray];
-}
-
 function getPlayer(playerId, game) {
   const index = game.players.reduce((accum, player, index) => {
     if (player.id === playerId) {
@@ -173,9 +179,9 @@ function getPlayer(playerId, game) {
 function startGame(game /*: Game */, now /* : number */)/*: Game */ {
   const oldPlayers = game.players;
   let [hitler, unmatchedPlayers] = pluckRandom(game.players);
+  hitler = { ...hitler, role: 'fascist' };
   let matchedPlayers /* : $ReadOnlyArray<Player> */ = [hitler];
   let player;
-  hitler = { ...hitler, role: 'fascist' };
   const numFascists = playerSetup[String(game.players.length)].fascists;
   for (let i = 0; i < numFascists; i++) {
     [player, unmatchedPlayers] = pluckRandom(unmatchedPlayers);
