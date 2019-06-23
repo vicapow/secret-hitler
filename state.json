@@ -1,46 +1,43 @@
 {
   "isStarted": true,
   "isVoting": false,
+  "presidentCandidate": "1",
+  "chancellorCandidate": "2",
   "players": [
     {
       "id": "3",
       "name": "Player 3",
       "revealRole": false,
       "seenRole": true,
-      "role": "fascist",
-      "vote": "ja"
+      "role": "fascist"
     },
     {
       "id": "1",
       "name": "Player 1",
       "revealRole": false,
       "seenRole": true,
-      "role": "liberal",
-      "vote": "ja"
+      "role": "liberal"
     },
     {
       "id": "2",
       "name": "Player 2",
       "revealRole": false,
       "seenRole": true,
-      "role": "liberal",
-      "vote": "ja"
+      "role": "liberal"
     },
     {
       "id": "4",
       "name": "Player 4",
       "revealRole": false,
       "seenRole": true,
-      "role": "liberal",
-      "vote": "ja"
+      "role": "liberal"
     },
     {
       "id": "5",
       "name": "Vic",
       "revealRole": false,
       "seenRole": true,
-      "role": "fascist",
-      "vote": "nein"
+      "role": "fascist"
     }
   ],
   "policies": [
@@ -131,7 +128,8 @@
     }
   ],
   "hitler": "5",
-  "phase": "REVEAL_TICKET_RESULTS",
-  "electedChancellor": "1",
-  "electedPresident": "5"
+  "phase": {
+    "name": "VOTE_ON_TICKET",
+    "timestamp": 1561253641274
+  }
 }

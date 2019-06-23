@@ -23,7 +23,10 @@ export type Game = $ReadOnly<{|
   players: $ReadOnlyArray<Player>,
   policies: $ReadOnlyArray<Policy>,
   hitler: string | void,
-  phase: Phase | void,
+  phase: $ReadOnly<{|
+    name: Phase | void,
+    timestamp: number
+  |}>,
   presidentialCandidate: string | void,
   chancellorCandidate: string | void,
   electedPresident: string | void,
@@ -42,13 +45,14 @@ export type Phase =
   | 'EXECUTION_ACTION_PHASE';
 
 export type Message =
-  | {| type: 'UPDATE_PLAYER_NAME', body: {| name: string, playerId: string |} |}
-  | {| type: 'START_GAME' |}
-  | {| type: 'PLAYER_JOINED', body: {| player: Player |} |}
-  | {| type: 'PLAYER_JOIN', body: {| playerId: string |} |}
-  | {| type: 'REVEAL_ROLE', body: {| playerId: string |} |}
-  | {| type: 'UPDATE_GAME_STATE', body: {| game: Game |} |}
-  | {| type: 'SELECT_CHANCELLOR_CANDIDATE', body: {| playerId: string |} |}
-  | {| type: 'VOTE_ON_TICKET', body: {| playerId: string, vote: 'ja' | 'nein' |} |}
+  | $ReadOnly<{| type: 'UPDATE_PLAYER_NAME', body: $ReadOnly<{| name: string, playerId: string |}> |}>
+  | $ReadOnly<{| type: 'START_GAME' |}>
+  | $ReadOnly<{| type: 'CLOCK_TICK' |}>
+  | $ReadOnly<{| type: 'PLAYER_JOINED', body: $ReadOnly<{| player: Player |}> |}>
+  | $ReadOnly<{| type: 'PLAYER_JOIN', body: {| playerId: string |} |}>
+  | $ReadOnly<{| type: 'REVEAL_ROLE', body: {| playerId: string |} |}>
+  | $ReadOnly<{| type: 'UPDATE_GAME_STATE', body: {| game: Game |} |}>
+  | $ReadOnly<{| type: 'SELECT_CHANCELLOR_CANDIDATE', body: $ReadOnly<{| playerId: string |}> |}>
+  | $ReadOnly<{| type: 'VOTE_ON_TICKET', body: $ReadOnly<{| playerId: string, vote: 'ja' | 'nein' |}> |}>
 
 */

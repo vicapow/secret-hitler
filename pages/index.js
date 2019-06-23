@@ -5,12 +5,12 @@ import io from 'socket.io-client';
 import type { Message, Game } from '../types.mjs';
 import { assert } from '../utils.mjs';
 
-type State = {|
+type State = $ReadOnly<{|
   isHand: boolean,
   isDebug: boolean,
   playerId: string | void,
   game: Game | void
-|};
+|}>;
 
 export default class Home extends Component<{||}, State> {
   constructor() {
@@ -148,7 +148,7 @@ function Hand({
       <span>{getRoleMessage(player, game)}</span>
       <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${player.role || 'liberal'}.png`} />
     </div> : null}
-    { game.phase === 'ELECTION_START' && player.id === game.presidentialCandidate ? <div>
+    { game.phase.name === 'ELECTION_START' && player.id === game.presidentialCandidate ? <div>
       You're the presidential candidate. Pick your chancellor candidate.
       <ul>
         {game.players
@@ -161,7 +161,7 @@ function Hand({
         })}
       </ul>
     </div> : null}
-    { game.phase === 'VOTE_ON_TICKET' ? <div>
+    { game.phase.name === 'VOTE_ON_TICKET' ? <div>
       <h1> Vote on the ticket </h1>
       <button onClick={() => voteOnTicket(playerId, 'ja')}>Ja</button>
       <button onClick={() => voteOnTicket(playerId, 'nein')}>Nien</button>
@@ -187,7 +187,7 @@ function Board({state}: {| state: State |}) {
   if (!game) {
     return <SecretHitlerLogo />;
   }
-  if (game.phase === 'VIEW_ROLES') {
+  if (game.phase.name === 'VIEW_ROLES') {
     return (
       <BoarderContainer state={state}>
         <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
@@ -207,7 +207,7 @@ function Board({state}: {| state: State |}) {
       </BoarderContainer>
     );
   }
-  if (game.phase === 'ELECTION_START') {
+  if (game.phase.name === 'ELECTION_START') {
     const presidentialCandidate = game.players.find(player => player.id === game.presidentialCandidate);
     if (!presidentialCandidate) {
       throw new Error(`No presidential candidate`);
@@ -224,7 +224,7 @@ function Board({state}: {| state: State |}) {
       </BoarderContainer>
     );
   }
-  if (game.phase === 'VOTE_ON_TICKET') {
+  if (game.phase.name === 'VOTE_ON_TICKET') {
     return (
       <BoarderContainer state={state}>
         <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
@@ -238,7 +238,7 @@ function Board({state}: {| state: State |}) {
       </BoarderContainer>
     )
   }
-  if (game.phase === 'REVEAL_TICKET_RESULTS') {
+  if (game.phase.name === 'REVEAL_TICKET_RESULTS') {
     const jas = game.players.reduce((jas:  number, player) => {
       return player.vote === 'ja' ? jas + 1 : jas;
     }, 0);
@@ -268,7 +268,7 @@ function Board({state}: {| state: State |}) {
       </BoarderContainer>
     );
   }
-  if (game.phase === 'LEGISLATIVE_SESSION_START') {
+  if (game.phase.name === 'LEGISLATIVE_SESSION_START') {
     const chancellor = getPlayer(game.electedChancellor || '', game);
     const president = getPlayer(game.electedPresident || '', game);
     if (!chancellor || !president) {
