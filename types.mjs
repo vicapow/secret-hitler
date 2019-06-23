@@ -2,33 +2,33 @@
 
 /*::
 
-export type Player = {|
+export type Player = $ReadOnly<{|
   id: string,
   name: string,
   revealRole: boolean,
   seenRole: boolean,
   role: 'fascist' | 'liberal' | void,
   vote: 'ja' | 'nein' | void,
-|};
+|}>;
 
-export type Policy = {|
+export type Policy = $ReadOnly<{|
   id: string,
   type: 'fascist' | 'liberal',
   location: 'deck' | 'president' | 'chancellor' | 'enacted'
-|};
+|}>;
 
-export type Game = {|
+export type Game = $ReadOnly<{|
   isStarted: boolean,
   isVoting: boolean,
-  players: Array<Player>,
-  policies: Array<Policy>,
+  players: $ReadOnlyArray<Player>,
+  policies: $ReadOnlyArray<Policy>,
   hitler: string | void,
   phase: Phase | void,
   presidentialCandidate: string | void,
   chancellorCandidate: string | void,
   electedPresident: string | void,
   electedChancellor: string | void,
-|};
+|}>;
 
 // Round phases
 export type Phase =

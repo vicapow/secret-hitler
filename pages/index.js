@@ -146,7 +146,7 @@ function Hand({
     </div>
     { player.revealRole ? <div>
       <span>{getRoleMessage(player, game)}</span>
-      <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${player.role}.png`} />
+      <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${player.role || 'liberal'}.png`} />
     </div> : null}
     { game.phase === 'ELECTION_START' && player.id === game.presidentialCandidate ? <div>
       You're the presidential candidate. Pick your chancellor candidate.
@@ -253,8 +253,9 @@ function Board({state}: {| state: State |}) {
               <div style={{flexGrow: 1}}></div>
               <div style={{textAlign: 'left'}}>
                 {game.players.map(player => {
+                  const { vote } = player;
                   return <div style={{fontSize: 20}}>
-                    <img style={{verticalAlign: 'middle', width: 80}} src={`static/${player.vote}.png`} />
+                    { vote ? <img style={{verticalAlign: 'middle', width: 80}} src={`static/${vote}.png`} /> : null }
                     {player.name}
                   </div>
                 })}

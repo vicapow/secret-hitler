@@ -63,6 +63,12 @@ function broadcastGameState() {
   fs.writeFileSync('./state.json', JSON.stringify(game, null, 2));
 }
 
+function pluckRandom<T>(array /*: $ReadOnlyArray<T> */) /* : [T, $ReadOnlyArray<T>] */ {
+  const randomIndex = Math.floor(Math.random() * array.length);
+  const resultArray = [...array.slice(0, randomIndex), ...array.slice(randomIndex + 1) ];
+  return [array[randomIndex], resultArray];
+}
+
 function getRandomUnmatchedPlayer(game) {
   const unmatched = game.players.filter(player => player.role === undefined);
   const randomIndex = Math.floor(Math.random() * unmatched.length);
@@ -85,22 +91,30 @@ function getPlayer(playerId, game) {
   return game.players[index];
 }
 
-function startGame() {
-  const hitler = getRandomUnmatchedPlayer(game);
-  hitler.role = 'fascist';
-  game.hitler = hitler.id;
+function startGame(game /*: Game */)/*: Game */ {
+  const oldPlayers = game.players;
+  let [hitler, unmatchedPlayers] = pluckRandom(game.players);
+  let matchedPlayers /* : $ReadOnlyArray<Player> */ = [hitler];
+  let player;
+  hitler = { ...hitler, role: 'fascist' };
   const numFascists = playerSetup[String(game.players.length)].fascists;
   for (let i = 0; i < numFascists; i++) {
-    getRandomUnmatchedPlayer(game).role = 'fascist';
+    [player, unmatchedPlayers] = pluckRandom(unmatchedPlayers);
+    player = {...player, role: 'fascist' };
+    matchedPlayers = [...matchedPlayers, player];
   }
-  game.players.forEach(player => {
-    if (player.role === undefined) {
-      player.role = 'liberal';
-    }
-  });
-  game.isStarted = true;
-  game.phase = 'VIEW_ROLES';
-  game.presidentialCandidate = getRandomPlayer(game).id;
+  matchedPlayers = [
+    ...matchedPlayers,
+    ...unmatchedPlayers.map(player => ({ ...player, role: 'liberal' }))
+  ];
+  return {
+    ...game,
+    isStarted: true,
+    phase: 'VIEW_ROLES',
+    players: matchedPlayers,
+    presidentialCandidate: getRandomPlayer(game).id,
+    hitler: hitler.id,
+  };
 }
 
 io.on('connection', socket => {
@@ -114,9 +128,12 @@ io.on('connection', socket => {
       // The game hasn't begin. Go ahead and remove this clients
       // player.
       if (removeWhenLeavingPreGame) {
-        game.players = game.players.filter(player => {
-          player.id !== socket.playerId;
-        });
+        game = {
+          ...game,
+          players: game.players.filter(player => {
+            player.id !== socket.playerId;
+          })
+        };
       }
       broadcastGameState();
     }
@@ -130,7 +147,7 @@ io.on('connection', socket => {
     console.log(message.type, message);
     if (message.type === 'START_GAME') {
       if (!game.isStarted) {
-        startGame();
+        game = startGame(game);
       }
     } else if (message.type === 'PLAYER_JOIN') {
       const player = game.players.find(player => player.id === message.body.playerId);
@@ -143,60 +160,107 @@ io.on('connection', socket => {
         // TODO Handle error case for when game has already started.
         if (!game.isStarted) {
           socket.playerId = message.body.playerId;
-          game.players.push({
+          const newPlayer = {
             id: message.body.playerId,
             name: `Player ${game.players.length + 1}`,
             role: undefined,
             revealRole: false,
             seenRole: false,
             vote: undefined,
-          });
+          };
+          game = {
+            ...game,
+            players: [...game.players, newPlayer]
+          };
         }
       }
     } else if (message.type === 'UPDATE_PLAYER_NAME') {
       const { name, playerId } = message.body;
-      getPlayer(playerId, game).name = name;
+      game = {
+        ...game,
+        players: game.players.map(player => {
+          if (player.id === playerId) {
+            return { ...player, name };
+          }
+          return player;
+        })
+      };
     } else if (message.type === 'REVEAL_ROLE') {
       const { playerId } = message.body;
       const player = getPlayer(playerId, game);
-      player.revealRole = !player.revealRole;
-      player.seenRole = true;
+      game = {
+        ...game,
+        players: game.players.map(player => {
+          if (player.id === playerId) {
+            return { ...player, revealRole: !player.revealRole, seenRole: true };
+          }
+          return player;
+        })
+      };
       if (game.phase === 'VIEW_ROLES') {
         const unseenPlayers = game.players.filter(player => !player.seenRole);
         if (unseenPlayers.length === 0) {
           // All players have seen their role. move to election phase.
-          game.phase = 'ELECTION_START';
+          game = {
+            ...game,
+            phase: 'ELECTION_START'
+          }
           if (game.chancellorCandidate === undefined) {
-            game.chancellorCandidate = getRandomPlayer(game).id;
+            game = {
+              ...game,
+              chancellorCandidate: getRandomPlayer(game).id
+            };
           }
         }
       }
     } else if (message.type === 'SELECT_CHANCELLOR_CANDIDATE') {
       const { playerId } = message.body;
-      game.chancellorCandidate = playerId;
-      game.phase = 'VOTE_ON_TICKET';
+      game = {
+        ...game,
+        chancellorCandidate: playerId,
+        phase: 'VOTE_ON_TICKET'
+      };
     } else if (message.type === 'VOTE_ON_TICKET') {
       const { playerId, vote } = message.body;
       const player = getPlayer(playerId, game);
-      player.vote = vote;
+      game = {
+        ...game,
+        players: game.players.map(player => {
+          if (player.id === playerId) {
+            return { ...player, vote };
+          }
+          return player;
+        })
+      }
       const notVoted = game.players.filter(player => player.vote === undefined);
       if (notVoted.length === 0) {
-        game.phase = 'REVEAL_TICKET_RESULTS';
+        game = {
+          ...game,
+          phase: 'REVEAL_TICKET_RESULTS'
+        };
         setTimeout(() => {
           const jas = game.players.reduce((jas /* :  number */, player) => {
             return player.vote === 'ja' ? (jas + 1) : jas;
           }, 0);
           const win = jas > (game.players.length / 2);
           if (win) {
-            game.phase = 'LEGISLATIVE_SESSION_START';
-            game.electedChancellor = game.chancellorCandidate;
-            game.electedPresident = game.presidentialCandidate;
-            game.chancellorCandidate = undefined;
-            game.presidentialCandidate = undefined;
+            game = {
+              ...game,
+              phase: 'LEGISLATIVE_SESSION_START',
+              electedChancellor: game.chancellorCandidate,
+              electedPresident: game.presidentialCandidate,
+              chancellorCandidate: undefined,
+              presidentialCandidate: undefined
+            };
           } else {
-            game.phase = 'VOTE_ON_TICKET';
+            game = { ...game, phase: 'VOTE_ON_TICKET' };
           }
-          game.players.forEach(player => { player.vote = undefined; });
+          game = {
+            ...game,
+            players: game.players.map(player => {
+              return { ...player, vote: undefined };
+            })
+          };
           broadcastGameState();
         }, 4000);
       }
