@@ -124,9 +124,9 @@ export default function update(game /* : Game */, message /* : Message */, now /
             timestamp: Date.now()
           },
           electedChancellor: game.chancellorCandidate,
-          electedPresident: game.presidentialCandidate,
+          electedPresident: game.presidentCandidate,
           chancellorCandidate: undefined,
-          presidentialCandidate: undefined
+          presidentCandidate: undefined
         };
       } else {
         game = {
@@ -191,7 +191,7 @@ function startGame(game /*: Game */, now /* : number */)/*: Game */ {
     isStarted: true,
     phase: { name: 'VIEW_ROLES', timestamp: now },
     players: matchedPlayers,
-    presidentialCandidate: getRandomPlayer(game).id,
+    presidentCandidate: getRandomPlayer(game).id,
     hitler: hitler.id,
   };
 }

@@ -27,7 +27,7 @@ export type Game = $ReadOnly<{|
     name: Phase | void,
     timestamp: number
   |}>,
-  presidentialCandidate: string | void,
+  presidentCandidate: string | void,
   chancellorCandidate: string | void,
   electedPresident: string | void,
   electedChancellor: string | void,

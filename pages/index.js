@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component } from 'react';
+import * as React from 'react';
 import io from 'socket.io-client';
 import type { Message, Game } from '../types.mjs';
 import { assert } from '../utils.mjs';
@@ -12,7 +12,7 @@ type State = $ReadOnly<{|
   game: Game | void
 |}>;
 
-export default class Home extends Component<{||}, State> {
+export default class Home extends React.Component<{||}, State> {
   constructor() {
     super();
     this.socket = null;
@@ -148,7 +148,7 @@ function Hand({
       <span>{getRoleMessage(player, game)}</span>
       <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${player.role || 'liberal'}.png`} />
     </div> : null}
-    { game.phase.name === 'ELECTION_START' && player.id === game.presidentialCandidate ? <div>
+    { game.phase.name === 'ELECTION_START' && player.id === game.presidentCandidate ? <div>
       You're the presidential candidate. Pick your chancellor candidate.
       <ul>
         {game.players
@@ -189,8 +189,8 @@ function Board({state}: {| state: State |}) {
   }
   if (game.phase.name === 'VIEW_ROLES') {
     return (
-      <BoarderContainer state={state}>
-        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1>Everyone view your role!</h1>
@@ -203,39 +203,39 @@ function Board({state}: {| state: State |}) {
             </div>
           </div>
           <div style={{flexGrow: 1}}></div>
-        </div>
-      </BoarderContainer>
+        </div>;
+      }} />
     );
   }
   if (game.phase.name === 'ELECTION_START') {
-    const presidentialCandidate = game.players.find(player => player.id === game.presidentialCandidate);
-    if (!presidentialCandidate) {
+    const presidentCandidate = game.players.find(player => player.id === game.presidentCandidate);
+    if (!presidentCandidate) {
       throw new Error(`No presidential candidate`);
     }
     return (
-      <BoarderContainer state={state}>
-        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> Election </h1>
-            <h2>President candidate {presidentialCandidate.name}, please select your chancellor candidate.</h2>
+            <h2>President candidate {presidentCandidate.name}, please select your chancellor candidate.</h2>
           </div>
-        </div>
-      </BoarderContainer>
+        </div>;
+      }} />
     );
   }
   if (game.phase.name === 'VOTE_ON_TICKET') {
     return (
-      <BoarderContainer state={state}>
-        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> Vote on ticket </h1>
             <h2> {game.players.filter(player => player.vote === undefined).length} player(s) still need to vote.</h2>
           </div>
           <div style={{flexGrow: 1}}></div>
-        </div>
-      </BoarderContainer>
+        </div>;
+      }} />
     )
   }
   if (game.phase.name === 'REVEAL_TICKET_RESULTS') {
@@ -244,8 +244,8 @@ function Board({state}: {| state: State |}) {
     }, 0);
     const win = jas > (game.players.length / 2);
     return (
-      <BoarderContainer state={state}>
-        <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+      <BoarderContainer state={state} renderContent={() => {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> { win ? 'Success' : 'Failure' }</h1>
@@ -265,7 +265,7 @@ function Board({state}: {| state: State |}) {
           </div>
           <div style={{flexGrow: 1}}></div>
         </div>
-      </BoarderContainer>
+      }} />
     );
   }
   if (game.phase.name === 'LEGISLATIVE_SESSION_START') {
@@ -275,15 +275,48 @@ function Board({state}: {| state: State |}) {
       throw new Error(`Chancellor or president is not set`);
     }
     return (
-      <BoarderContainer state={state}>
-        <div style={{textAlign: 'center', marginTop: '25%'}}>
-          <h1> Legislative session has started with  Chancellor {chancellor.name} and President {president.name} </h1>
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}>
+            <div style={{display: 'flex', flexDirection: 'row', height: '100%' }}>
+              <div style={{flexGrow: 4}}></div>
+              <div style={{flexGrow: 2, textAlign: 'center'}}>
+                <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+                  <div style={{flexGrow: 1}}>
+                    <h2>{president.name}</h2>
+                  </div>
+                  <div style={{flexGrow: 1}}>
+                    <img src="static/president.png" style={{ height: 100}} />
+                  </div>
+                  <div style={{flexGrow: 1}}>
+                    <img src="static/policy.png" style={{ height: 80}} />
+                    <img src="static/policy.png" style={{ height: 80}} />
+                    <img src="static/policy.png" style={{ height: 80}} />
+                  </div>
+                </div>
+              </div>
+              <div style={{flexGrow: 2, textAlign: 'center'}}>
+                <h2>{chancellor.name}</h2>
+                <img src="static/chancellor.png" style={{height: 100}} />
+              </div>
+              <div style={{flexGrow: 4}}></div>
+            </div>
+          </div>
+          <div style={{flexGrow: 1}}>
+            <div style={{ display: 'table', width: '100%', height: '100%' }}>
+              <div style={{display: 'table-cell', verticalAlign: 'middle', paddingLeft: 200, paddingRight: 200, textAlign: 'center' }}>
+                <h1 style={{fontSize: 50}}>The legislative session has started. </h1>
+              </div>
+            </div>
+          </div>
+          <div style={{flexGrow: 1}}></div>
         </div>
+      }}>
       </BoarderContainer>
     );
   }
-  return <BoarderContainer state={state}>
-    <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+  return <BoarderContainer state={state} renderContent={() => {
+    return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
       <div style={{flexGrow: 1}}><SecretHitlerLogo /></div>
       <div style={{flexGrow: 2, textAlign: 'center', fontSize: 50, fontWeight: 'bold'}}>
         { canJoin(state) ?
@@ -308,7 +341,7 @@ function Board({state}: {| state: State |}) {
         </div>
       </div>
     </div>
-  </BoarderContainer>;
+  }} />;
 }
 
 const Bird = () => {
@@ -317,7 +350,16 @@ const Bird = () => {
   </svg>
 };
 
-class BoarderContainer extends Component<any, any> {
+class BoarderContainer extends React.Component<{|
+  renderContent?: ({ width: number, height: number}) => React.Node,
+  children?: void,
+  state: $ReadOnly<{|
+    game: Game | void,
+    isDebug: boolean,
+    isHand: boolean,
+    playerId: string | void
+  |}>,
+|}, any> {
   constructor() {
     super();
     this.state = {
@@ -342,7 +384,7 @@ class BoarderContainer extends Component<any, any> {
       overflow: 'hidden',
       position: 'absolute',
     }}>
-      {this.props.children}
+      { this.props.renderContent ? this.props.renderContent({width:  this.state.width, height: this.state.height}) : null }
       {this.props.state.isDebug ?
         <div style={{left: 0, top: 0, width: 300, height: '100%', position: 'absolute', overflow: 'scroll'}}>
           <pre>{JSON.stringify(this.props.state.game, null, 2)}</pre>

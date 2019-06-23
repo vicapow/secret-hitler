@@ -25,7 +25,7 @@ function update(state, message, now) {
   const nextState = originalUpdate(state, message, now);
   console.log(JSON.stringify(message, null, 2));
   console.log(JSON.stringify(nextState, null, 2));
-  return game;
+  return nextState;
 }
 
 function createPolicies(policies) {
@@ -51,7 +51,7 @@ function initGame(now /*: number */)/*: Game */ {
       hitler: undefined,
       phase: { name: undefined, timestamp: now },
       isVoting: false,
-      presidentialCandidate: undefined,
+      presidentCandidate: undefined,
       chancellorCandidate: undefined,
       electedPresident: undefined,
       electedChancellor: undefined,
