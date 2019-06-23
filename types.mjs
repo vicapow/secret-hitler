@@ -14,7 +14,7 @@ export type Player = $ReadOnly<{|
 export type Policy = $ReadOnly<{|
   id: string,
   type: 'fascist' | 'liberal',
-  location: 'deck' | 'president' | 'chancellor' | 'enacted' | 'discard'
+  location: 'deck' | 'president' | 'chancellor' | 'fascist' | 'liberal' | 'discard'
 |}>;
 
 export type Game = $ReadOnly<{|
@@ -42,7 +42,8 @@ export type Phase =
   | 'REVEAL_TICKET_RESULTS'
   | 'TICKET_FAIL'
   | 'LEGISLATIVE_SESSION_START'
-  | 'EXECUTION_ACTION_PHASE';
+  | 'CHANCELLOR_POLICY_TURN'
+  | 'REVEAL_NEW_POLICY';
 
 export type Message =
   | $ReadOnly<{| type: 'UPDATE_PLAYER_NAME', body: $ReadOnly<{| name: string, playerId: string |}> |}>
@@ -54,5 +55,7 @@ export type Message =
   | $ReadOnly<{| type: 'UPDATE_GAME_STATE', body: {| game: Game |} |}>
   | $ReadOnly<{| type: 'SELECT_CHANCELLOR_CANDIDATE', body: $ReadOnly<{| playerId: string |}> |}>
   | $ReadOnly<{| type: 'VOTE_ON_TICKET', body: $ReadOnly<{| playerId: string, vote: 'ja' | 'nein' |}> |}>
+  | $ReadOnly<{| type: 'PRESIDENT_DISCARD_POLICY', body: $ReadOnly<{| policyId: string |}> |}>
+  | $ReadOnly<{| type: 'CHANCELLOR_DISCARD_POLICY', body: $ReadOnly<{| policyId: string |}> |}>
 
 */

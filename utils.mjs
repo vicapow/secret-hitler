@@ -6,10 +6,18 @@ export function assert(condition /* : boolean | void */) {
   }
 }
 
+export function randomIndex /* :: <T> */ (array /*: $ReadOnlyArray<T> */) /*: number */ {
+  return Math.floor(Math.random() * array.length);
+}
+
+export function pluck /* :: <T> */(array /*: $ReadOnlyArray<T> */, index /*: number */) /* : [T, $ReadOnlyArray<T>] */ {
+  const resultArray = [...array.slice(0, index), ...array.slice(index + 1) ];
+  return [array[index], resultArray];
+}
+
 export function pluckRandom /* :: <T> */(array /*: $ReadOnlyArray<T> */) /* : [T, $ReadOnlyArray<T>] */ {
-  const randomIndex = Math.floor(Math.random() * array.length);
-  const resultArray = [...array.slice(0, randomIndex), ...array.slice(randomIndex + 1) ];
-  return [array[randomIndex], resultArray];
+  const index = randomIndex(array);
+  return pluck(array, index);
 }
 
 export function shuffle /* :: <T> */(array /*: $ReadOnlyArray<T> */) /* : $ReadOnlyArray<T> */ {

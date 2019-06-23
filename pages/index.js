@@ -102,6 +102,20 @@ export default class Home extends React.Component<{||}, State> {
     });
   }
 
+  presidentDiscardPolicy = (policyId: string) => {
+    this.sendMessage({
+      type: 'PRESIDENT_DISCARD_POLICY',
+      body: { policyId }
+    });
+  }
+
+  chancellorDiscardPolicy = (policyId: string) => {
+    this.sendMessage({
+      type: 'CHANCELLOR_DISCARD_POLICY',
+      body: { policyId }
+    });
+  }
+
   render() {
     if (this.state.isHand) {
       return <Hand
@@ -111,6 +125,8 @@ export default class Home extends React.Component<{||}, State> {
         onUpdateName={this.onUpdateName}
         onSelectChancellorCandidate={this.onSelectChancellorCandidate}
         voteOnTicket={this.voteOnTicket}
+        presidentDiscardPolicy={this.presidentDiscardPolicy}
+        chancellorDiscardPolicy={this.chancellorDiscardPolicy}
         />;
     }
     return <Board state={this.state} />;
@@ -124,6 +140,8 @@ function Hand({
   onUpdateName,
   onSelectChancellorCandidate,
   voteOnTicket,
+  presidentDiscardPolicy,
+  chancellorDiscardPolicy,
 }: {|
   state: State,
   onStart: () => void,
@@ -131,23 +149,28 @@ function Hand({
   onUpdateName: (SyntheticKeyboardEvent<HTMLInputElement>) => void,
   onSelectChancellorCandidate: (playerId: string) => void,
   voteOnTicket: (playerId: string, vote: 'ja' | 'nein') => void,
+  presidentDiscardPolicy: (policyId: string) => void,
+  chancellorDiscardPolicy: (policyId: string) => void,
 |}) {
   const { playerId, game } = state;
   const player = playerId && game && getPlayer(playerId, game) || undefined;
   if (!player || !game || !playerId) {
     return <div></div>;
   }
+  const role = player.role;
   return <div>
     <button onClick={onStart}>Start</button>
-    <button onClick={onRevealRole}>Reveal role</button>
-    <div>
-      <span>name</span>
-      <input type="text" onChange={onUpdateName} value={player.name}></input>
-    </div>
-    { player.revealRole ? <div>
-      <span>{getRoleMessage(player, game)}</span>
-      <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${player.role || 'liberal'}.png`} />
-    </div> : null}
+    { role !== undefined ? <div>
+      <button onClick={onRevealRole}>Reveal role</button>
+      <div>
+        <span>name</span>
+        <input type="text" onChange={onUpdateName} value={player.name}></input>
+      </div>
+      { player.revealRole ? <div>
+        <span>{getRoleMessage(player, game)}</span>
+        <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${role}.png`} />
+      </div> : null}
+    </div> : null }
     { game.phase.name === 'ELECTION_START' && player.id === game.presidentCandidate ? <div>
       You're the presidential candidate. Pick your chancellor candidate.
       <ul>
@@ -165,6 +188,26 @@ function Hand({
       <h1> Vote on the ticket </h1>
       <button onClick={() => voteOnTicket(playerId, 'ja')}>Ja</button>
       <button onClick={() => voteOnTicket(playerId, 'nein')}>Nien</button>
+    </div> : null}
+    { game.phase.name === 'LEGISLATIVE_SESSION_START' && game.electedPresident === playerId ? <div>
+      <h1> Pick which policy to discard </h1>
+      <div style={{display: 'flex', flexDirection: 'row'}}>
+      { game.policies.filter(policy => policy.location === 'president').map(policy => {
+        return <div style={{ flexGrow: 1}} onClick={() => presidentDiscardPolicy(policy.id)}>
+          <img src={`static/${policy.type}-policy.png`} style={{width: '100%'}} />
+        </div>
+      })}
+      </div>
+    </div> : null}
+    { game.phase.name === 'CHANCELLOR_POLICY_TURN' && game.electedChancellor === playerId ? <div>
+      <h1> Pick which policy to discard </h1>
+      <div style={{display: 'flex', flexDirection: 'row'}}>
+      { game.policies.filter(policy => policy.location === 'chancellor').map(policy => {
+        return <div style={{ flexGrow: 1}} onClick={() => chancellorDiscardPolicy(policy.id)}>
+          <img src={`static/${policy.type}-policy.png`} style={{width: '100%'}} />
+        </div>
+      })}
+      </div>
     </div> : null}
     {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
     playerId {playerId}
@@ -268,7 +311,7 @@ function Board({state}: {| state: State |}) {
       }} />
     );
   }
-  if (game.phase.name === 'LEGISLATIVE_SESSION_START') {
+  if (game.phase.name === 'LEGISLATIVE_SESSION_START' || game.phase.name === 'CHANCELLOR_POLICY_TURN') {
     const chancellor = getPlayer(game.electedChancellor || '', game);
     const president = getPlayer(game.electedPresident || '', game);
     if (!chancellor || !president) {
@@ -289,15 +332,31 @@ function Board({state}: {| state: State |}) {
                     <img src="static/president.png" style={{ height: 100}} />
                   </div>
                   <div style={{flexGrow: 1}}>
-                    <img src="static/policy.png" style={{ height: 80}} />
-                    <img src="static/policy.png" style={{ height: 80}} />
-                    <img src="static/policy.png" style={{ height: 80}} />
+                   {game.phase.name === 'LEGISLATIVE_SESSION_START' ? <div>
+                      <img src="static/policy.png" style={{ height: 80}} />
+                      <img src="static/policy.png" style={{ height: 80}} />
+                      <img src="static/policy.png" style={{ height: 80}} />
+                    </div>
+                   : null}
                   </div>
                 </div>
               </div>
               <div style={{flexGrow: 2, textAlign: 'center'}}>
-                <h2>{chancellor.name}</h2>
-                <img src="static/chancellor.png" style={{height: 100}} />
+                <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+                  <div style={{flexGrow: 1}}>
+                    <h2>{chancellor.name}</h2>
+                  </div>
+                  <div style={{flexGrow: 1}}>
+                    <img src="static/chancellor.png" style={{ height: 100}} />
+                  </div>
+                  <div style={{flexGrow: 1}}>
+                   {game.phase.name === 'CHANCELLOR_POLICY_TURN' ? <div>
+                      <img src="static/policy.png" style={{ height: 80}} />
+                      <img src="static/policy.png" style={{ height: 80}} />
+                    </div>
+                   : null}
+                  </div>
+                </div>
               </div>
               <div style={{flexGrow: 4}}></div>
             </div>
@@ -313,6 +372,17 @@ function Board({state}: {| state: State |}) {
         </div>
       }}>
       </BoarderContainer>
+    );
+  }
+  if (game.phase.name === 'REVEAL_NEW_POLICY') {
+    return (
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}>
+            <h1> Reveal new policy! </h1>
+          </div>
+        </div>;
+      }} />
     );
   }
   return <BoarderContainer state={state} renderContent={() => {

@@ -3,12 +3,12 @@
 // This is the game state machine. The game state can only be changed through `event` messages.
 
 import { playerSetup, policies } from './rules.mjs';
-import { assert, pluckRandom } from './utils.mjs';
-/* :: import type { Game, Message, Player } from './types'; */
+import { assert, pluckRandom, pluck } from './utils.mjs';
+/* :: import type { Game, Message, Player, Policy } from './types'; */
 
 export default function update(game /* : Game */, message /* : Message */, now /* : number */) /* : Game */ {
   if (message.type === 'START_GAME') {
-    if (!game.isStarted) {
+    if (canStart(game)) {
       game = startGame(game, now);
     }
   } else if (message.type === 'PLAYER_JOIN') {
@@ -156,6 +156,35 @@ export default function update(game /* : Game */, message /* : Message */, now /
         })
       };
     }
+  } else if (message.type === 'PRESIDENT_DISCARD_POLICY') {
+    const index = game.policies.findIndex(policy => policy.id === message.body.policyId);
+    const [discarded, policies] /*: [Policy, $ReadOnlyArray<Policy>] */ = pluck(game.policies, index);
+    game = {
+      ...game,
+      phase: { name: 'CHANCELLOR_POLICY_TURN', timestamp: now },
+      policies: [...policies.map((policy /*: Policy */) => {
+        if (policy.location === 'president') {
+          return { ...policy, location: 'chancellor' };
+        }
+        return policy;
+      }), { ...discarded, location: 'discard' }]
+    };
+  } else if (message.type === 'CHANCELLOR_DISCARD_POLICY') {
+    const index = game.policies.findIndex(policy => policy.id === message.body.policyId);
+    const [discarded, policies] = pluck(game.policies, index);
+    game = {
+      ...game,
+      phase: { name: 'REVEAL_NEW_POLICY', timestamp: now },
+      policies: [...policies.map((policy /*: Policy */) => {
+        if (policy.location === 'chancellor') {
+          return {
+            ...policy,
+            location: policy.type
+          };
+        }
+        return policy;
+      }), { ...discarded, location: 'discard' } ]
+    }
   }
   return game;
 }
@@ -201,3 +230,5 @@ function startGame(game /*: Game */, now /* : number */)/*: Game */ {
     hitler: hitler.id,
   };
 }
+
+const canStart = (game) => game && game.isStarted === false && game.players.length >= 5;
