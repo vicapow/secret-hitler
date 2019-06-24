@@ -124,8 +124,6 @@ io.on('connection', socket => {
 
 nextApp.prepare().then(() => {
   app.get('*', (req, res) => {
-    console.log(req.url);
-    console.log(req.headers);
     return nextHandler(req, res);
   });
   console.log('listen to server');

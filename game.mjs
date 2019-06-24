@@ -3,7 +3,7 @@
 // This is the game state machine. The game state can only be changed through `event` messages.
 
 import { playerSetup, policies } from './rules.mjs';
-import { assert, pluckRandom, pluck, shuffle } from './utils.mjs';
+import { assert, pluckRandom, pluck, shuffle, latestPolicy } from './utils.mjs';
 /* :: import type { Game, Message, Player, Policy } from './types'; */
 
 export default function update(game /* : Game */, message /* : Message */, now /* : number */) /* : Game */ {
@@ -117,29 +117,43 @@ export default function update(game /* : Game */, message /* : Message */, now /
       }, 0);
       const win = jas > (game.players.length / 2);
       if (win) {
-        game = {
-          ...game,
-          phase: {
-            name: 'LEGISLATIVE_SESSION_START',
-            timestamp: now
-          },
-          policies: game.policies.reduce((accum, policy) => {
-            let newPolicy = policy;
-            let found = accum.found;
-            if (policy.location === 'deck' && accum.found < 3) {
-              found = found + 1;
-              newPolicy = {
-                ...policy,
-                location: 'president'
-              };
-            }
-            return { found, policies: [...accum.policies, newPolicy] };
-          }, { found: 0, policies: []}).policies,
-          electedChancellor: game.chancellorCandidate,
-          electedPresident: game.presidentCandidate,
-          chancellorCandidate: undefined,
-          presidentCandidate: undefined
-        };
+        const fascistPolicies = game.policies.filter(policy => policy.location === 'fascist');
+        if (game.chancellorCandidate === game.hitler && fascistPolicies.length >= 3) {
+          // Fascists Win!
+          game  = {
+            ...game,
+            phase: { name: 'FASCISTS_WIN_WITH_HITLER_CHANCELLOR', timestamp: now },
+            electedChancellor: game.chancellorCandidate,
+            electedPresident: game.presidentCandidate,
+            chancellorCandidate: undefined,
+            presidentCandidate: undefined
+          };
+        } else {
+          game = {
+            ...game,
+            phase: {
+              name: 'LEGISLATIVE_SESSION_START',
+              timestamp: now
+            },
+            // draw the presidents 3 policies.
+            policies: game.policies.reduce((accum, policy) => {
+              let newPolicy = policy;
+              let found = accum.found;
+              if (policy.location === 'deck' && accum.found < 3) {
+                found = found + 1;
+                newPolicy = {
+                  ...policy,
+                  location: 'president'
+                };
+              }
+              return { found, policies: [...accum.policies, newPolicy] };
+            }, { found: 0, policies: []}).policies,
+            electedChancellor: game.chancellorCandidate,
+            electedPresident: game.presidentCandidate,
+            chancellorCandidate: undefined,
+            presidentCandidate: undefined
+          };
+        }
       } else {
         game = {
           ...game,
@@ -182,6 +196,78 @@ export default function update(game /* : Game */, message /* : Message */, now /
         }, {
           type: 'DECK_READY',
         }, now);
+    } else if (game.phase.name === 'REVEAL_POLICIES' &&
+      (now - game.phase.timestamp > 4000)
+    ) {
+      const policy = latestPolicy(game);
+      if (!policy) {
+        throw new Error(`Invariant failed. Policy should exist`);
+      }
+      const fascistPolicies = game.policies.filter(policy => policy.location === 'fascist').length;
+      const liberalPolicies = game.policies.filter(policy => policy.location === 'liberal').length;
+      if (policy.type === 'liberal') {
+        if (liberalPolicies === 5) {
+          game = {
+            ...game,
+            phase: { name: 'LIBERALS_WIN_BY_POLICY', timestamp: now }
+          };
+        }
+      } else if (policy.type === 'fascist') {
+        // a fascist policy was just played.
+        if (fascistPolicies === 6) {
+          // Fascists win!
+          game = {
+            ...game,
+            phase: { name: 'FASCISTS_WIN_BY_POLICY', timestamp: now }
+          };
+        } else if (game.players.length <= 6) {
+          if (fascistPolicies === 3) {
+            game = {
+              ...game,
+              phase: { name: 'PRESIDENT_EXAMINE_DECK_START', timestamp: now }
+            };
+          } else if (fascistPolicies === 4 || fascistPolicies === 5) {
+            game = {
+              ...game,
+              phase: { name: 'PRESIDENT_KILL_START', timestamp: now }
+            };
+          }
+        } else if (game.players.length <= 8) {
+          if (fascistPolicies === 2) {
+          game = {
+            ...game,
+            phase: { name: 'PRESIDENT_INVESTIGATE_IDENTITY_START', timestamp: now }
+          };
+          } else if (fascistPolicies === 3) {
+            game = {
+              ...game,
+              phase: { name: 'SPECIAL_ELECTION_START', timestamp: now }
+            };
+          } else if (fascistPolicies === 4 || fascistPolicies === 5) {
+            game = {
+              ...game,
+              phase: { name: 'PRESIDENT_KILL_START', timestamp: now }
+            };
+          }
+        } else if (game.players.length <= 10) {
+          if (fascistPolicies === 1 || fascistPolicies === 2) {
+            game = {
+              ...game,
+              phase: { name: 'PRESIDENT_INVESTIGATE_IDENTITY_START', timestamp: now }
+            };
+          } else if (fascistPolicies === 3) {
+            game = {
+              ...game,
+              phase: { name: 'SPECIAL_ELECTION_START', timestamp: now }
+            };
+          } else if (fascistPolicies === 4 || fascistPolicies === 5) {
+            game = {
+              ...game,
+              phase: { name: 'PRESIDENT_KILL_START', timestamp: now }
+            };
+          }
+        }
+      }
     }
   } else if (message.type === 'PRESIDENT_DISCARD_POLICY') {
     const index = game.policies.findIndex(policy => policy.id === message.body.policyId);

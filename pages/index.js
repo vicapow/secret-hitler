@@ -3,7 +3,7 @@
 import * as React from 'react';
 import io from 'socket.io-client';
 import type { Message, Game } from '../types.mjs';
-import { assert } from '../utils.mjs';
+import { assert, latestPolicy, isOver, fascistsWon } from '../utils.mjs';
 
 type State = $ReadOnly<{|
   isHand: boolean,
@@ -230,6 +230,22 @@ function Board({state}: {| state: State |}) {
   if (!game) {
     return <SecretHitlerLogo />;
   }
+  if (isOver(game)) {
+    return (
+      <BoarderContainer
+        state={state}
+        renderContent={({width, height}: { width: number, height: number}) => {
+          return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+            <div style={{flexGrow: 1}}></div>
+            <div style={{flexGrow: 1, textAlign: 'center'}}>
+              <h1>{fascistsWon(game) ? `Fascists` : `Liberals`} Won!</h1>
+            </div>
+            <div style={{flexGrow: 1}}></div>
+          </div>;
+        }}
+      />
+    )
+  }
   if (game.phase.name === 'VIEW_ROLES') {
     return (
       <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
@@ -375,22 +391,17 @@ function Board({state}: {| state: State |}) {
     );
   }
   if (game.phase.name === 'REVEAL_NEW_POLICY') {
-    const latestPolicy = game.policies.reduce((latest, policy) => {
-      if (policy.location !== 'fascist' && policy.location !== 'liberal') {
-        return latest;
-      }
-      if (!latest || policy.timestamp > latest.timestamp) {
-        return policy;
-      }
-      return latest;
-    }, undefined);
+    const policy = latestPolicy(game);
+    if (!policy) {
+      throw new Error(`Policy not set`);
+    }
     return (
       <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1> Reveal new policy! </h1>
-            <img src={`static/${latestPolicy.type}-policy.png`} />
+            <img src={`static/${policy.type}-policy.png`} />
           </div>
           <div style={{flexGrow: 1}}></div>
         </div>;

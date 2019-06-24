@@ -33,3 +33,9 @@ export const policies = {
   liberal: 6,
   fascist: 11
 };
+
+export const powers = {
+  '5': {
+
+  }
+}

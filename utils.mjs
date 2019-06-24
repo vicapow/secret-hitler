@@ -1,5 +1,7 @@
 // @flow
 
+/* :: import type { Game, Policy } from './types.mjs'; */
+
 export function assert(condition /* : boolean | void */) {
   if (!condition) {
     throw new Error(`Assertion failure.`);
@@ -29,4 +31,34 @@ export function shuffle /* :: <T> */(array /*: $ReadOnlyArray<T> */) /* : $ReadO
     newArray = [...newArray, item]; // push
   }
   return newArray;
+}
+
+export function latestPolicy(game /*: Game */) /*: Policy | void */ {
+  return game.policies.reduce((latest, policy) => {
+    if (policy.location !== 'fascist' && policy.location !== 'liberal') {
+      return latest;
+    }
+    if (!latest || policy.timestamp > latest.timestamp) {
+      return policy;
+    }
+    return latest;
+  }, undefined);
+}
+
+export function isOver(game /*: Game */) /*: boolean */ {
+  return fascistsWon(game) || liberalsWon(game);
+}
+
+export function fascistsWon(game /*: Game */) /*: boolean */ {
+  return [
+    'FASCISTS_WIN_WITH_HITLER_CHANCELLOR',
+    'FASCISTS_WIN_BY_POLICY',
+  ].indexOf(game.phase.name) !== -1;
+}
+
+export function liberalsWon(game /*: Game */) /*: boolean */ {
+  return [
+    'LIBERALS_WIN_BY_POLICY',
+    'LIBERALS_WIN_BY_HITLER_ASSASSINATION',
+  ].indexOf(game.phase.name) !== -1;
 }
