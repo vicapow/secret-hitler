@@ -24,8 +24,8 @@ let game /*: Game */ = initGame(Date.now());
 
 function update(state, message, now) {
   const nextState = originalUpdate(state, message, now);
-  console.log(JSON.stringify(message, null, 2));
-  console.log(JSON.stringify(nextState, null, 2));
+  console.log('MESSAGE:', message.type);
+  // console.log(JSON.stringify(nextState, null, 2));
   return nextState;
 }
 
@@ -63,7 +63,6 @@ function initGame(now /*: number */)/*: Game */ {
 }
 
 function broadcastGameState(game /*: Game */) {
-  console.log('update...');
   io.emit('message', {
     type: 'UPDATE_GAME_STATE',
     body: { game }
@@ -125,6 +124,8 @@ io.on('connection', socket => {
 
 nextApp.prepare().then(() => {
   app.get('*', (req, res) => {
+    console.log(req.url);
+    console.log(req.headers);
     return nextHandler(req, res);
   });
   console.log('listen to server');
