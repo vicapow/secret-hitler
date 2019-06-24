@@ -3,7 +3,7 @@
 // This is the game state machine. The game state can only be changed through `event` messages.
 
 import { playerSetup, policies } from './rules.mjs';
-import { assert, pluckRandom, pluck, shuffle, latestPolicy } from './utils.mjs';
+import { assert, pluckRandom, pluck, shuffle, latestPolicy, playerRight } from './utils.mjs';
 /* :: import type { Game, Message, Player, Policy } from './types'; */
 
 export default function update(game /* : Game */, message /* : Message */, now /* : number */) /* : Game */ {
@@ -67,10 +67,10 @@ export default function update(game /* : Game */, message /* : Message */, now /
             timestamp: now
           }
         }
-        if (game.chancellorCandidate === undefined) {
+        if (game.presidentCandidate === undefined) {
           game = {
             ...game,
-            chancellorCandidate: getRandomPlayer(game).id
+            presidentCandidate: getRandomPlayer(game).id
           };
         }
       }
@@ -211,6 +211,8 @@ export default function update(game /* : Game */, message /* : Message */, now /
             ...game,
             phase: { name: 'LIBERALS_WIN_BY_POLICY', timestamp: now }
           };
+        } else {
+          game = startNextElection(game, now);
         }
       } else if (policy.type === 'fascist') {
         // a fascist policy was just played.
@@ -231,13 +233,15 @@ export default function update(game /* : Game */, message /* : Message */, now /
               ...game,
               phase: { name: 'PRESIDENT_KILL_START', timestamp: now }
             };
+          } else {
+            game = startNextElection(game, now);
           }
         } else if (game.players.length <= 8) {
           if (fascistPolicies === 2) {
-          game = {
-            ...game,
-            phase: { name: 'PRESIDENT_INVESTIGATE_IDENTITY_START', timestamp: now }
-          };
+            game = {
+              ...game,
+              phase: { name: 'PRESIDENT_INVESTIGATE_IDENTITY_START', timestamp: now }
+            };
           } else if (fascistPolicies === 3) {
             game = {
               ...game,
@@ -248,6 +252,8 @@ export default function update(game /* : Game */, message /* : Message */, now /
               ...game,
               phase: { name: 'PRESIDENT_KILL_START', timestamp: now }
             };
+          } else {
+            game = startNextElection(game, now);
           }
         } else if (game.players.length <= 10) {
           if (fascistPolicies === 1 || fascistPolicies === 2) {
@@ -347,6 +353,18 @@ function startGame(game /*: Game */, now /* : number */)/*: Game */ {
     players: matchedPlayers,
     presidentCandidate: getRandomPlayer(game).id,
     hitler: hitler.id,
+  };
+}
+
+function startNextElection(game /*: Game */, now /*: number */) /*: Game */ {
+  return {
+    ...game,
+    phase: { name: 'ELECTION_START', timestamp: now },
+    presidentCandidate: playerRight(
+      game.players,
+      player => player.id === game.electedPresident
+    ).id
+    // presidentCandidate
   };
 }
 

@@ -37,7 +37,6 @@ export type Game = $ReadOnly<{|
 // Round phases
 export type Phase =
   | 'VIEW_ROLES'
-  | 'SELECT_CHANCELLOR_CANDIDATE'
   | 'ELECTION_START'
   | 'VOTE_ON_TICKET'
   | 'REVEAL_TICKET_RESULTS'

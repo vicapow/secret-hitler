@@ -1,6 +1,6 @@
 // @flow
 
-/* :: import type { Game, Policy } from './types.mjs'; */
+/* :: import type { Game, Policy, Player } from './types.mjs'; */
 
 export function assert(condition /* : boolean | void */) {
   if (!condition) {
@@ -61,4 +61,14 @@ export function liberalsWon(game /*: Game */) /*: boolean */ {
     'LIBERALS_WIN_BY_POLICY',
     'LIBERALS_WIN_BY_HITLER_ASSASSINATION',
   ].indexOf(game.phase.name) !== -1;
+}
+
+export function playerRight(players /*: $ReadOnlyArray<Player> */, match /*: (Player) => boolean */) /*: Player */ {
+  const index = players.findIndex(match);
+  const lastIndex = players.length - 1;
+  if (index + 1 <= lastIndex) {
+    return players[index + 1];
+  }
+  // wrap around
+  return players[0];
 }
