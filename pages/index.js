@@ -176,9 +176,18 @@ function Hand({
       <ul>
         {game.players
           .filter(player => {
-            return player.id !== playerId
-              && player.id !== game.electedPresident
-              && player.id !== game.electedChancellor;
+            if (player.id === playerId) {
+              return false;
+            }
+            if (player.id === game.electedChancellor) {
+              // chancellors are always term limited.
+              return false;
+            }
+            if (game.players.length > 5 && player.id === game.electedPresident) {
+              // presidents are not term limited when there are 5 or fewer players.
+              return false;
+            }
+            return true;
           }).map(player => {
           return <li><button onClick={() => onSelectChancellorCandidate(player.id)}>{player.name}</button></li>
         })}
