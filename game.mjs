@@ -26,6 +26,8 @@ export default function update(game /* : Game */, message /* : Message */, now /
           revealRole: false,
           seenRole: false,
           vote: undefined,
+          killed: false,
+          killedAt: undefined,
         };
         game = {
           ...game,
@@ -97,7 +99,7 @@ export default function update(game /* : Game */, message /* : Message */, now /
         return player;
       })
     }
-    const notVoted = game.players.filter(player => player.vote === undefined);
+    const notVoted = game.players.filter(player => player.vote === undefined && !player.killed);
     if (notVoted.length === 0) {
       game = {
         ...game,
@@ -112,10 +114,12 @@ export default function update(game /* : Game */, message /* : Message */, now /
       game.phase.name === 'REVEAL_TICKET_RESULTS' &&
       (now - game.phase.timestamp > 4000)
     ) {
-      const jas = game.players.reduce((jas /* :  number */, player) => {
-        return player.vote === 'ja' ? (jas + 1) : jas;
-      }, 0);
-      const win = jas > (game.players.length / 2);
+      const jas = game.players
+        .filter(player => !player.killed)
+        .reduce((jas /* :  number */, player) => {
+          return player.vote === 'ja' ? (jas + 1) : jas;
+        }, 0);
+      const win = jas > (game.players.filter(player => !player.killed).length / 2);
       if (win) {
         const fascistPolicies = game.policies.filter(policy => policy.location === 'fascist');
         if (game.chancellorCandidate === game.hitler && fascistPolicies.length >= 3) {
@@ -274,6 +278,11 @@ export default function update(game /* : Game */, message /* : Message */, now /
           }
         }
       }
+    } else if (
+      game.phase.name === 'REVEAL_KILLED_PLAYER' &&
+      (now - game.phase.timestamp > 4000)
+    ) {
+      game = startNextElection(game, now);
     }
   } else if (message.type === 'PRESIDENT_DISCARD_POLICY') {
     const index = game.policies.findIndex(policy => policy.id === message.body.policyId);
@@ -310,13 +319,44 @@ export default function update(game /* : Game */, message /* : Message */, now /
       ...game,
       phase: { name: 'REVEAL_POLICIES', timestamp: now },
     };
+  } else if (message.type === 'DONE_EXAMINING_DECK') {
+    game = startNextElection(game, now);
+  } else if (message.type === 'KILL_PLAYER') {
+    game = {
+      ...game,
+      players: game.players.map(player => {
+        if (player.id === message.body.playerId) {
+          return { ...player, killed: true, killedAt: now };
+        }
+        return player;
+      })
+    };
+    const hitler = game.players.find(player => player.id === game.hitler);
+    if (hitler && hitler.killed) {
+      game = {
+        ...game,
+        phase: {
+          name: 'LIBERALS_WIN_BY_HITLER_ASSASSINATION',
+          timestamp: now
+        }
+      }
+    } else {
+      game = {
+        ...game,
+        phase: {
+          name: 'REVEAL_KILLED_PLAYER',
+          timestamp: now
+        }
+      };
+    }
   }
   return game;
 }
 
 function getRandomPlayer(game) {
-  const randomIndex = Math.floor(Math.random() * game.players.length);
-  return game.players[randomIndex];
+  const players = game.players.filter(player => !player.killed);
+  const randomIndex = Math.floor(Math.random() * players.length);
+  return players[randomIndex];
 }
 
 function getPlayer(playerId, game) {
@@ -361,7 +401,7 @@ function startNextElection(game /*: Game */, now /*: number */) /*: Game */ {
     ...game,
     phase: { name: 'ELECTION_START', timestamp: now },
     presidentCandidate: playerRight(
-      game.players,
+      game.players.filter(player => !player.killed),
       player => player.id === game.electedPresident
     ).id
     // presidentCandidate

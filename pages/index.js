@@ -116,6 +116,14 @@ export default class Home extends React.Component<{||}, State> {
     });
   }
 
+  doneExaminingDeck = () => {
+    this.sendMessage({ type: 'DONE_EXAMINING_DECK' });
+  }
+
+  killPlayer  = (playerId: string) => {
+    this.sendMessage({ type: 'KILL_PLAYER', body: { playerId } });
+  }
+
   render() {
     if (this.state.isHand) {
       return <Hand
@@ -127,6 +135,8 @@ export default class Home extends React.Component<{||}, State> {
         voteOnTicket={this.voteOnTicket}
         presidentDiscardPolicy={this.presidentDiscardPolicy}
         chancellorDiscardPolicy={this.chancellorDiscardPolicy}
+        doneExaminingDeck={this.doneExaminingDeck}
+        killPlayer={this.killPlayer}
         />;
     }
     return <Board state={this.state} />;
@@ -142,6 +152,8 @@ function Hand({
   voteOnTicket,
   presidentDiscardPolicy,
   chancellorDiscardPolicy,
+  doneExaminingDeck,
+  killPlayer,
 }: {|
   state: State,
   onStart: () => void,
@@ -151,6 +163,8 @@ function Hand({
   voteOnTicket: (playerId: string, vote: 'ja' | 'nein') => void,
   presidentDiscardPolicy: (policyId: string) => void,
   chancellorDiscardPolicy: (policyId: string) => void,
+  doneExaminingDeck: () => void,
+  killPlayer: (playerId: string) => void,
 |}) {
   const { playerId, game } = state;
   const player = playerId && game && getPlayer(playerId, game) || undefined;
@@ -158,6 +172,11 @@ function Hand({
     return <div></div>;
   }
   const role = player.role;
+  if (player.killed) {
+    return  <div>
+      <h1> You're dead </h1>
+    </div>;
+  }
   return <div>
     <button onClick={onStart}>Start</button>
     <div>
@@ -176,6 +195,9 @@ function Hand({
       <ul>
         {game.players
           .filter(player => {
+            if (player.killed) {
+              return false;
+            }
             if (player.id === playerId) {
               return false;
             }
@@ -183,7 +205,7 @@ function Hand({
               // chancellors are always term limited.
               return false;
             }
-            if (game.players.length > 5 && player.id === game.electedPresident) {
+            if (game.players.filter(player => !player.killed).length > 5 && player.id === game.electedPresident) {
               // presidents are not term limited when there are 5 or fewer players.
               return false;
             }
@@ -217,7 +239,30 @@ function Hand({
         </div>
       })}
       </div>
-    </div> : null}
+    </div> : null }
+    { game.phase.name === 'PRESIDENT_EXAMINE_DECK_START' && game.electedPresident === playerId ? <div>
+      <h1> Review the top three cards in the deck</h1>
+      <div style={{display: 'flex', flexDirection: 'row'}}>
+        { game.policies.filter(policy => policy.location === 'deck').slice(0, 3).map(policy => {
+          return <div style={{ flexGrow: 1}}s>
+            <img src={`static/${policy.type}-policy.png`} style={{width: '100%'}} />
+          </div>
+        })}
+      </div>
+      <button onClick={() => doneExaminingDeck() }>finish</button>
+    </div> : null }
+    { game.phase.name === 'PRESIDENT_KILL_START' && game.electedPresident === playerId ? <div>
+      <h1>Pick a player to kill</h1>
+      <div style={{display: 'flex', flexDirection: 'row'}}>
+        <ul>
+          { game.players.filter(player => player.id !== playerId && !player.killed).map(player => {
+            return <li>
+              <button onClick={() => killPlayer(player.id) }>{player.name}</button>
+            </li>
+          })}
+        </ul>
+      </div>
+    </div> : null }
     {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
     playerId {playerId}
   </div>;
@@ -299,7 +344,7 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> Vote on ticket </h1>
-            <h2> {game.players.filter(player => player.vote === undefined).length} player(s) still need to vote.</h2>
+            <h2> {game.players.filter(player => player.vote === undefined && !player.killed).length} player(s) still need to vote.</h2>
           </div>
           <div style={{flexGrow: 1}}></div>
         </div>;
@@ -310,7 +355,7 @@ function Board({state}: {| state: State |}) {
     const jas = game.players.reduce((jas:  number, player) => {
       return player.vote === 'ja' ? jas + 1 : jas;
     }, 0);
-    const win = jas > (game.players.length / 2);
+    const win = jas > (game.players.filter(player => !player.killed).length / 2);
     return (
       <BoarderContainer state={state} renderContent={() => {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
@@ -320,7 +365,7 @@ function Board({state}: {| state: State |}) {
             <div style={{display: 'flex', flexDirection: 'row', width: '100%', height: '100%'}}>
               <div style={{flexGrow: 1}}></div>
               <div style={{textAlign: 'left'}}>
-                {game.players.map(player => {
+                {game.players.filter(player => !player.killed).map(player => {
                   const { vote } = player;
                   return <div style={{fontSize: 20}}>
                     { vote ? <img style={{verticalAlign: 'middle', width: 80}} src={`static/${vote}.png`} /> : null }
@@ -478,6 +523,67 @@ function Board({state}: {| state: State |}) {
         </div>;
       }} />
     );
+  }
+  if (game.phase.name === 'PRESIDENT_EXAMINE_DECK_START') {
+    return (
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}>
+            <div style={{ display: 'table', width: '100%', height: '100%' }}>
+              <div style={{display: 'table-cell', verticalAlign: 'middle', paddingLeft: 200, paddingRight: 200, textAlign: 'center' }}>
+                <h1 style={{fontSize: 50}}>President is examining the top 3 cards of the deck...</h1>
+              </div>
+            </div>
+          </div>
+        </div>;
+      }} />
+    );
+  }
+  if (game.phase.name === 'PRESIDENT_KILL_START') {
+    const president = getPlayer(game.electedPresident || '', game);
+    if (!president) {
+      throw new Error('invariant failed');
+    }
+    return (
+      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+        return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+          <div style={{flexGrow: 1}}>
+            <div style={{ display: 'table', width: '100%', height: '100%' }}>
+              <div style={{display: 'table-cell', verticalAlign: 'middle', paddingLeft: 200, paddingRight: 200, textAlign: 'center' }}>
+                <h1 style={{fontSize: 50}}>The President {president.name} is considering who to kill...</h1>
+              </div>
+            </div>
+          </div>
+        </div>;
+      }} />
+    );
+  }
+
+  if (game.phase.name === 'REVEAL_KILLED_PLAYER') {
+    const mostRecentlyKilled = game.players.reduce((accum, player) => {
+      const { killedAt } = player;
+      if (killedAt === undefined) {
+        return accum;
+      }
+      if (accum === undefined || accum.killedAt === undefined || killedAt > accum.killedAt) {
+        return player;
+      }
+      return accum;
+    }, undefined);
+    if (!mostRecentlyKilled) {
+      throw new Error('invariant failed');
+    }
+    return <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+      return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+        <div style={{flexGrow: 1}}>
+          <div style={{ display: 'table', width: '100%', height: '100%' }}>
+            <div style={{display: 'table-cell', verticalAlign: 'middle', paddingLeft: 200, paddingRight: 200, textAlign: 'center' }}>
+              <h1 style={{fontSize: 50}}>{mostRecentlyKilled.name} was killed!</h1>
+            </div>
+          </div>
+        </div>
+      </div>;
+    }} />;
   }
   return <BoarderContainer state={state} renderContent={() => {
     return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>

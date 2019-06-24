@@ -9,6 +9,8 @@ export type Player = $ReadOnly<{|
   seenRole: boolean,
   role: 'fascist' | 'liberal' | void,
   vote: 'ja' | 'nein' | void,
+  killed: boolean | void,
+  killedAt: number | void,
 |}>;
 
 export type Policy = $ReadOnly<{|
@@ -55,6 +57,7 @@ export type Phase =
   | 'FASCISTS_WIN_BY_POLICY'
   | 'LIBERALS_WIN_BY_POLICY'
   | 'LIBERALS_WIN_BY_HITLER_ASSASSINATION'
+  | 'REVEAL_KILLED_PLAYER'
 
 export type Message =
   | $ReadOnly<{| type: 'UPDATE_PLAYER_NAME', body: $ReadOnly<{| name: string, playerId: string |}> |}>
@@ -69,5 +72,7 @@ export type Message =
   | $ReadOnly<{| type: 'PRESIDENT_DISCARD_POLICY', body: $ReadOnly<{| policyId: string |}> |}>
   | $ReadOnly<{| type: 'CHANCELLOR_DISCARD_POLICY', body: $ReadOnly<{| policyId: string |}> |}>
   | $ReadOnly<{| type: 'DECK_READY' |}>
+  | $ReadOnly<{| type: 'DONE_EXAMINING_DECK' |}>
+  | $ReadOnly<{| type: 'KILL_PLAYER', body: $ReadOnly<{| playerId: string |}> |}>
 
 */
