@@ -23,6 +23,7 @@ export type Policy = $ReadOnly<{|
 export type Game = $ReadOnly<{|
   isStarted: boolean,
   isVoting: boolean,
+  failedVotes: number,
   players: $ReadOnlyArray<Player>,
   policies: $ReadOnlyArray<Policy>,
   hitler: string | void,

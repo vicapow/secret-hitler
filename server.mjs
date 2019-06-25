@@ -52,6 +52,7 @@ function initGame(now /*: number */)/*: Game */ {
       hitler: undefined,
       phase: { name: undefined, timestamp: now },
       isVoting: false,
+      failedVotes: 0,
       presidentCandidate: undefined,
       chancellorCandidate: undefined,
       electedPresident: undefined,

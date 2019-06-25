@@ -139,6 +139,7 @@ export default function update(game /* : Game */, message /* : Message */, now /
               name: 'LEGISLATIVE_SESSION_START',
               timestamp: now
             },
+            failedVotes: 0,
             // draw the presidents 3 policies.
             policies: game.policies.reduce((accum, policy) => {
               let newPolicy = policy;
@@ -159,12 +160,18 @@ export default function update(game /* : Game */, message /* : Message */, now /
           };
         }
       } else {
+        // Fail. Move the president ticket.
         game = {
           ...game,
           phase: {
             name: 'VOTE_ON_TICKET',
             timestamp: now
-          }
+          },
+          failedVotes: game.failedVotes + 1,
+          presidentCandidate: playerRight(
+            game.players,
+            player => player.id === game.presidentCandidate
+          ).id
         };
       }
       game = {
