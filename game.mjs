@@ -41,7 +41,9 @@ export default function update(game /* : Game */, message /* : Message */, now /
       ...game,
       players: game.players.map(player => {
         if (player.id === playerId) {
-          return { ...player, name };
+          if (name.length < 20) {
+            return { ...player, name };
+          }
         }
         return player;
       })
@@ -164,14 +166,15 @@ export default function update(game /* : Game */, message /* : Message */, now /
         game = {
           ...game,
           phase: {
-            name: 'VOTE_ON_TICKET',
+            name: 'ELECTION_START',
             timestamp: now
           },
           failedVotes: game.failedVotes + 1,
           presidentCandidate: playerRight(
             game.players,
             player => player.id === game.presidentCandidate
-          ).id
+          ).id,
+          chancellorCandidate: undefined
         };
       }
       game = {
