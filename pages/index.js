@@ -143,6 +143,19 @@ export default class Home extends React.Component<{||}, State> {
   }
 }
 
+function HandButton(props) {
+  return <button onClick={props.onClick}
+    style={{
+    width: '100%',
+    background: '#434343',
+    padding: 10,
+    marginBottom: 10,
+    color: 'white',
+    border: 'none'
+    }}
+  >{props.children}</button>;
+}
+
 function Hand({
   state,
   onStart,
@@ -173,18 +186,34 @@ function Hand({
   }
   const role = player.role;
   if (player.killed) {
-    return  <div>
+    return  <div style={{ fontFamily: 'Futura', margin: 14, fontSize: 24 }}>
       <h1> You're dead </h1>
+      <p> Please wait quietly until the end of the game. Definitely not reveal your identity or give any hits! </p>
     </div>;
   }
-  return <div>
-    <button onClick={onStart}>Start</button>
+  const presidentCandidate = getPlayer(game.presidentCandidate || '', game);
+  const chancellorCandidate = getPlayer(game.chancellorCandidate || '', game);
+  return <div style={{ fontFamily: 'Futura', margin: 14, fontSize: 24 }}>
+      <style global jsx>{`
+      body {
+        margin: 0;
+      }
+    `}</style>
+    {!game.isStarted && canStart({game})
+      ? <HandButton onClick={onStart}>Start the game?</HandButton> : null}
+    {!game.isStarted && !canStart({game}) ? <div style={{}}>
+      <div>{canStartMessage({game})}</div>
+    </div> : null}
     <div>
-      <span>name</span>
-      <input type="text" onChange={onUpdateName} value={player.name}></input>
+      <span>name: </span>
+      <input type="text" onChange={onUpdateName} value={player.name} style={{
+        fontSize: 24,
+        border: 'gray',
+        borderStyle: 'dotted',
+      }} />
     </div>
     { role !== undefined ? <div>
-      <button onClick={onRevealRole}>Reveal role</button>
+      <HandButton onClick={onRevealRole}>Reveal role</HandButton>
       { player.revealRole ? <div>
         <span>{getRoleMessage(player, game)}</span>
         <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${role}.png`} />
@@ -192,7 +221,7 @@ function Hand({
     </div> : null }
     { game.phase.name === 'ELECTION_START' && player.id === game.presidentCandidate ? <div>
       You're the presidential candidate. Pick your chancellor candidate.
-      <ul>
+      <div style={{marginTop: 10}}>
         {game.players
           .filter(player => {
             if (player.killed) {
@@ -211,14 +240,23 @@ function Hand({
             }
             return true;
           }).map(player => {
-          return <li><button onClick={() => onSelectChancellorCandidate(player.id)}>{player.name}</button></li>
+          return <div style={{}}><HandButton onClick={() => onSelectChancellorCandidate(player.id)}>{player.name}</HandButton></div>
         })}
-      </ul>
+      </div>
     </div> : null}
     { game.phase.name === 'VOTE_ON_TICKET' ? <div>
-      <h1> Vote on the ticket </h1>
-      <button onClick={() => voteOnTicket(playerId, 'ja')}>Ja</button>
-      <button onClick={() => voteOnTicket(playerId, 'nein')}>Nien</button>
+      <h1>Vote on ticket</h1>
+      <div>President: {presidentCandidate ? presidentCandidate.name : ''} </div>
+      <div>Chancellor: {chancellorCandidate ? chancellorCandidate.name : ''} </div>
+      { player.vote === undefined ? <div>
+        <HandButton onClick={() => voteOnTicket(playerId, 'ja')}>Ja</HandButton>
+        <HandButton onClick={() => voteOnTicket(playerId, 'nein')}>Nien</HandButton>
+      </div> : <div>
+        <h1>voted {player.vote}</h1>
+      </div>}
+      <div style={{textAlign: 'center'}}>
+        Waiting on {game.players.filter(player => player.vote === undefined).length} player(s)
+      </div>
     </div> : null}
     { game.phase.name === 'LEGISLATIVE_SESSION_START' && game.electedPresident === playerId ? <div>
       <h1> Pick which policy to discard </h1>
@@ -230,16 +268,20 @@ function Hand({
       })}
       </div>
     </div> : null}
-    { game.phase.name === 'CHANCELLOR_POLICY_TURN' && game.electedChancellor === playerId ? <div>
-      <h1> Pick which policy to discard </h1>
-      <div style={{display: 'flex', flexDirection: 'row'}}>
-      { game.policies.filter(policy => policy.location === 'chancellor').map(policy => {
-        return <div style={{ flexGrow: 1}} onClick={() => chancellorDiscardPolicy(policy.id)}>
-          <img src={`static/${policy.type}-policy.png`} style={{width: '100%'}} />
+    { game.phase.name === 'CHANCELLOR_POLICY_TURN' && game.electedChancellor === playerId ? (() => {
+      const [policy1, policy2] = game.policies.filter(policy => policy.location === 'chancellor');
+      return <div>
+        <h1> Pick which policy to enact </h1>
+        <div style={{display: 'flex', flexDirection: 'row'}}>
+        <div style={{ flexGrow: 1}} onClick={() => chancellorDiscardPolicy(policy2.id)}>
+          <img src={`static/${policy1.type}-policy.png`} style={{width: '100%'}} />
         </div>
-      })}
+        <div style={{ flexGrow: 1}} onClick={() => chancellorDiscardPolicy(policy1.id)}>
+          <img src={`static/${policy2.type}-policy.png`} style={{width: '100%'}} />
+        </div>
+        </div>
       </div>
-    </div> : null }
+    })() : null }
     { game.phase.name === 'PRESIDENT_EXAMINE_DECK_START' && game.electedPresident === playerId ? <div>
       <h1> Review the top three cards in the deck</h1>
       <div style={{display: 'flex', flexDirection: 'row'}}>
@@ -249,22 +291,20 @@ function Hand({
           </div>
         })}
       </div>
-      <button onClick={() => doneExaminingDeck() }>finish</button>
+      <HandButton onClick={() => doneExaminingDeck() }>finish</HandButton>
     </div> : null }
     { game.phase.name === 'PRESIDENT_KILL_START' && game.electedPresident === playerId ? <div>
       <h1>Pick a player to kill</h1>
-      <div style={{display: 'flex', flexDirection: 'row'}}>
-        <ul>
+      <div>
+        <div>
           { game.players.filter(player => player.id !== playerId && !player.killed).map(player => {
-            return <li>
-              <button onClick={() => killPlayer(player.id) }>{player.name}</button>
-            </li>
+            return <HandButton onClick={() => killPlayer(player.id) }>{player.name}</HandButton>
           })}
-        </ul>
+        </div>
       </div>
     </div> : null }
+    {state.isDebug ? `playerId ${playerId}` : null}
     {state.isDebug ? <pre>{JSON.stringify(state, null, 2)}</pre> : null}
-    playerId {playerId}
   </div>;
 }
 
@@ -338,13 +378,21 @@ function Board({state}: {| state: State |}) {
     );
   }
   if (game.phase.name === 'VOTE_ON_TICKET') {
+    const presidentCandidate = getPlayer(game.presidentCandidate || '', game);
+    const chancellorCandidate = getPlayer(game.chancellorCandidate || '', game);
     return (
       <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> Vote on ticket </h1>
-            <h2> {game.players.filter(player => player.vote === undefined && !player.killed).length} player(s) still need to vote.</h2>
+            <h2> President Candidate ----- {presidentCandidate ? presidentCandidate.name : ''} </h2>
+            <h2> Chancellor Candidate ----- {chancellorCandidate ? chancellorCandidate.name : ''} </h2>
+            <div>
+              {game.players.map(player => {
+                return <div>{player.name} {player.vote !== undefined ? '🗳️' : ``}</div>
+              })}
+            </div>
           </div>
           <div style={{flexGrow: 1}}></div>
         </div>;
@@ -590,7 +638,7 @@ function Board({state}: {| state: State |}) {
       <div style={{flexGrow: 1}}><SecretHitlerLogo /></div>
       <div style={{flexGrow: 2, textAlign: 'center', fontSize: 50, fontWeight: 'bold'}}>
         { canJoin(state) ?
-          <div>{(canStart(state) ? ` We have enough players to begin but a few more can't hurt.` : ` Still looking for ${5 - game.players.length} more players.`)}</div>
+          <div>{canStartMessage(state)}</div>
         : <div> We're full! Someone start the game.</div> }
       </div>
       <div style={{flexGrow: 4}}>
@@ -648,7 +696,7 @@ class BoarderContainer extends React.Component<{|
   render() {
     return <div style={{
       margin: 0,
-      fontFamily: 'Helvetica',
+      fontFamily: 'Futura',
       width: window.innerWidth,
       height: window.innerHeight,
       overflow: 'hidden',
@@ -710,6 +758,14 @@ function getPlayer(playerId: string, game: Game) {
   return game.players[index];
 }
 
-const canJoin = ({game}: State) => game && game.isStarted === false && game.players.length <= 10;
-const canStart = ({game}: State) => game && game.isStarted === false && game.players.length >= 5;
+const canJoin = ({game}) => game && game.isStarted === false && game.players.length <= 10;
+const canStart = ({game}) => game && game.isStarted === false && game.players.length >= 5;
 const isObserver = ({game, playerId}: State) => game && game.isStarted && !game.players.find(player => player.id === playerId);
+const canStartMessage = ({game}) => {
+  if (canStart({game})) {
+    return ` We have enough players to begin but a few more can't hurt`;
+  }
+  const players = (game && game.players || []).length;
+  const needed = 5 - players;
+  return `Still looking for ${needed} more player${needed > 1 ? 's' : ''}`;
+}
