@@ -1,160 +1,149 @@
 {
-  "isStarted": true,
-  "hitler": "2",
+  "isStarted": false,
   "phase": {
-    "name": "ELECTION_START",
-    "timestamp": 1561525099769
+    "timestamp": 1561527250909
   },
   "isVoting": false,
   "failedVotes": 0,
-  "presidentCandidate": "3",
   "players": [
     {
-      "id": "2",
-      "name": "B",
-      "role": "fascist",
+      "id": "1",
+      "name": "Player 1",
       "revealRole": false,
-      "seenRole": true,
+      "seenRole": false,
+      "killed": false
+    },
+    {
+      "id": "2",
+      "name": "Player 3",
+      "revealRole": false,
+      "seenRole": false,
       "killed": false
     },
     {
       "id": "4",
-      "name": "D",
-      "role": "fascist",
+      "name": "Player 4",
       "revealRole": false,
-      "seenRole": true,
+      "seenRole": false,
       "killed": false
     },
     {
-      "id": "1",
-      "name": "A",
-      "role": "liberal",
-      "revealRole": false,
-      "seenRole": true,
-      "killed": true,
-      "killedAt": 1561525095344
-    },
-    {
       "id": "3",
-      "name": "C",
-      "role": "liberal",
+      "name": "Player 3",
       "revealRole": false,
-      "seenRole": true,
+      "seenRole": false,
       "killed": false
     },
     {
       "id": "5",
       "name": "Player 5",
-      "role": "liberal",
       "revealRole": false,
-      "seenRole": true,
+      "seenRole": false,
       "killed": false
     }
   ],
   "policies": [
     {
-      "id": "1",
+      "id": "4",
       "type": "fascist",
       "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "14",
-      "type": "liberal",
-      "location": "deck",
-      "timestamp": 1561521182985
-    },
-    {
-      "id": "15",
-      "type": "liberal",
-      "location": "liberal",
-      "timestamp": 1561524799382
+      "timestamp": 1561527250909
     },
     {
       "id": "6",
       "type": "fascist",
       "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "3",
-      "type": "fascist",
-      "location": "fascist",
-      "timestamp": 1561524934077
-    },
-    {
-      "id": "9",
-      "type": "fascist",
-      "location": "fascist",
-      "timestamp": 1561524887325
-    },
-    {
-      "id": "16",
-      "type": "liberal",
-      "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "5",
-      "type": "fascist",
-      "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "2",
-      "type": "fascist",
-      "location": "deck",
-      "timestamp": 1561521182985
-    },
-    {
-      "id": "13",
-      "type": "liberal",
-      "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "17",
-      "type": "liberal",
-      "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "10",
-      "type": "fascist",
-      "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "7",
-      "type": "fascist",
-      "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "12",
-      "type": "liberal",
-      "location": "deck",
-      "timestamp": 1561525040312
-    },
-    {
-      "id": "4",
-      "type": "fascist",
-      "location": "fascist",
-      "timestamp": 1561524637115
+      "timestamp": 1561527250909
     },
     {
       "id": "11",
       "type": "fascist",
-      "location": "fascist",
-      "timestamp": 1561525031614
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "15",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1561527250909
     },
     {
       "id": "8",
       "type": "fascist",
       "location": "deck",
-      "timestamp": 1561525040312
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "2",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "12",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "5",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "13",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "9",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "7",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "14",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "17",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "10",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "16",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "1",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1561527250909
+    },
+    {
+      "id": "3",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1561527250909
     }
-  ],
-  "electedChancellor": "1",
-  "electedPresident": "4"
+  ]
 }

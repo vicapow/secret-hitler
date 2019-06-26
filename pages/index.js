@@ -3,7 +3,7 @@
 import * as React from 'react';
 import io from 'socket.io-client';
 import type { Message, Game } from '../types.mjs';
-import { assert, latestPolicy, isOver, fascistsWon } from '../utils.mjs';
+import { assert, latestPolicy, isOver, fascistsWon, explainVictory } from '../utils.mjs';
 
 type State = $ReadOnly<{|
   isHand: boolean,
@@ -207,6 +207,7 @@ function Hand({
     <div>
       <span>name: </span>
       <input type="text" onChange={onUpdateName} value={player.name} style={{
+        width: 'calc(100% - 9px)',
         fontSize: 24,
         border: 'gray',
         borderStyle: 'dotted',
@@ -255,7 +256,7 @@ function Hand({
         <h1>voted {player.vote}</h1>
       </div>}
       <div style={{textAlign: 'center'}}>
-        Waiting on {game.players.filter(player => player.vote === undefined).length} player(s)
+        Waiting on {game.players.filter(player => player.vote === undefined && !player.killed).length} player(s)
       </div>
     </div> : null}
     { game.phase.name === 'LEGISLATIVE_SESSION_START' && game.electedPresident === playerId ? <div>
@@ -327,14 +328,27 @@ function Board({state}: {| state: State |}) {
   if (isOver(game)) {
     return (
       <BoarderContainer
+        showPolicyStatus={true}
         state={state}
         renderContent={({width, height}: { width: number, height: number}) => {
           return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
-            <div style={{flexGrow: 1}}></div>
-            <div style={{flexGrow: 1, textAlign: 'center'}}>
+            <div style={{flexGrow: 4}}></div>
+            <div style={{flexGrow: 2, textAlign: 'center'}}>
               <h1>{fascistsWon(game) ? `Fascists` : `Liberals`} Won!</h1>
+              <p>{explainVictory(game)}</p>
             </div>
-            <div style={{flexGrow: 1}}></div>
+            <div style={{flexGrow: 1, textAlign: 'center'}}>
+              <div style={{fontSize: 24, display: 'flex', flexDirection: 'row', width: '100%'}}>
+                {game.players.map(player => {
+                  return <div style={{flexBasis: '100%', textAlign: 'center'}}>
+                    <div style={{margin: 20}}>
+                      <span style={{width: 20}}>{player.name}</span>
+                      <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${player.role || ''}.png`} />
+                    </div>
+                  </div>
+                })}
+              </div>
+            </div>
           </div>;
         }}
       />
@@ -342,7 +356,7 @@ function Board({state}: {| state: State |}) {
   }
   if (game.phase.name === 'VIEW_ROLES') {
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number}) => {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
@@ -366,7 +380,7 @@ function Board({state}: {| state: State |}) {
       throw new Error(`No presidential candidate`);
     }
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number}) => {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
@@ -381,7 +395,7 @@ function Board({state}: {| state: State |}) {
     const presidentCandidate = getPlayer(game.presidentCandidate || '', game);
     const chancellorCandidate = getPlayer(game.chancellorCandidate || '', game);
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number}) => {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number}) => {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
@@ -389,7 +403,7 @@ function Board({state}: {| state: State |}) {
             <h2> President Candidate ----- {presidentCandidate ? presidentCandidate.name : ''} </h2>
             <h2> Chancellor Candidate ----- {chancellorCandidate ? chancellorCandidate.name : ''} </h2>
             <div>
-              {game.players.map(player => {
+              {game.players.filter(player => !player.killed).map(player => {
                 return <div>{player.name} {player.vote !== undefined ? '🗳️' : ``}</div>
               })}
             </div>
@@ -405,7 +419,7 @@ function Board({state}: {| state: State |}) {
     }, 0);
     const win = jas > (game.players.filter(player => !player.killed).length / 2);
     return (
-      <BoarderContainer state={state} renderContent={() => {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={() => {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
@@ -436,7 +450,7 @@ function Board({state}: {| state: State |}) {
       throw new Error(`Chancellor or president is not set`);
     }
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}>
             <div style={{display: 'flex', flexDirection: 'row', height: '100%' }}>
@@ -498,7 +512,7 @@ function Board({state}: {| state: State |}) {
       throw new Error(`Policy not set`);
     }
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
@@ -512,7 +526,7 @@ function Board({state}: {| state: State |}) {
   }
   if (game.phase.name === 'SHUFFLE_DECK') {
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
@@ -524,45 +538,16 @@ function Board({state}: {| state: State |}) {
     );
   }
   if (game.phase.name === 'REVEAL_POLICIES') {
-    const liberalPolicies = game.policies.filter(policy => policy.location === 'liberal');
-    const fascistPolicies = game.policies.filter(policy => policy.location === 'fascist');
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+      <BoarderContainer showPolicyStatus={false} showPolicyStatus={false} state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1> Reveal policies </h1>
             <div style={{display: 'flex', flexDirection: 'row', height: '100%'}}>
               <div style={{flexGrow: 1, width: '60%'}}></div>
-              <div style={{flexGrow: 1, width: '100%'}}>
-                <div style={{position: 'relative'}}>
-                  <img src="static/liberal-board.png" style={{width: '100%'}} />
-                  { liberalPolicies.length >= 1 ?
-                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '16.5%', top: '24%', width: '13%' }}/> : null }
-                  { liberalPolicies.length >= 2 ?
-                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '30.1%', top: '24%', width: '13%' }}/> : null }
-                  { liberalPolicies.length >= 3 ?
-                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '43.8%', top: '24%', width: '13%' }}/> : null }
-                  { liberalPolicies.length >= 4 ?
-                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '57.2%', top: '24%', width: '13%' }}/> : null }
-                  { liberalPolicies.length >= 5 ?
-                    <img src="static/liberal-policy.png" style={{position: 'absolute', left: '70.9%', top: '24%', width: '13%' }}/> : null }
-                </div>
-                <div style={{position: 'relative'}}>
-                  <img src="static/fascist-board-56.png" style={{width: '100%'}} />
-                  { fascistPolicies.length >= 1 ?
-                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '9.5%', top: '24%', width: '13%' }}/> : null }
-                  { fascistPolicies.length >= 2 ?
-                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '23.1%', top: '24%', width: '13%' }}/> : null }
-                  { fascistPolicies.length >= 3 ?
-                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '36.8%', top: '24%', width: '13%' }}/> : null }
-                  { fascistPolicies.length >= 4 ?
-                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '50.2%', top: '24%', width: '13%' }}/> : null }
-                  { fascistPolicies.length >= 5 ?
-                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '63.9%', top: '24%', width: '13%' }}/> : null }
-                  { fascistPolicies.length >= 6 ?
-                    <img src="static/fascist-policy.png" style={{position: 'absolute', left: '77.9%', top: '24%', width: '13%' }}/> : null }
-                </div>
+              <div style={{flexGrow: 1}}>
+                <PolicyStatus game={game} />
               </div>
               <div style={{flexGrow: 1, width: '60%'}}></div>
             </div>
@@ -574,7 +559,7 @@ function Board({state}: {| state: State |}) {
   }
   if (game.phase.name === 'PRESIDENT_EXAMINE_DECK_START') {
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}>
             <div style={{ display: 'table', width: '100%', height: '100%' }}>
@@ -593,7 +578,7 @@ function Board({state}: {| state: State |}) {
       throw new Error('invariant failed');
     }
     return (
-      <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+      <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number})=> {
         return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
           <div style={{flexGrow: 1}}>
             <div style={{ display: 'table', width: '100%', height: '100%' }}>
@@ -621,7 +606,7 @@ function Board({state}: {| state: State |}) {
     if (!mostRecentlyKilled) {
       throw new Error('invariant failed');
     }
-    return <BoarderContainer state={state} renderContent={({width, height}: { width: number, height: number})=> {
+    return <BoarderContainer showPolicyStatus={true} state={state} renderContent={({width, height}: { width: number, height: number})=> {
       return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
         <div style={{flexGrow: 1}}>
           <div style={{ display: 'table', width: '100%', height: '100%' }}>
@@ -633,10 +618,10 @@ function Board({state}: {| state: State |}) {
       </div>;
     }} />;
   }
-  return <BoarderContainer state={state} renderContent={() => {
-    return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+  return <BoarderContainer showPolicyStatus={false} state={state} renderContent={() => {
+    return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: 'white'}}>
       <div style={{flexGrow: 1}}><SecretHitlerLogo /></div>
-      <div style={{flexGrow: 2, textAlign: 'center', fontSize: 50, fontWeight: 'bold'}}>
+      <div style={{flexGrow: 2, textAlign: 'center', fontSize: 50}}>
         { canJoin(state) ?
           <div>{canStartMessage(state)}</div>
         : <div> We're full! Someone start the game.</div> }
@@ -662,6 +647,41 @@ function Board({state}: {| state: State |}) {
   }} />;
 }
 
+function PolicyStatus({game}: { game: Game }) {
+  const liberalPolicies = game.policies.filter(policy => policy.location === 'liberal');
+  const fascistPolicies = game.policies.filter(policy => policy.location === 'fascist');
+  return <div style={{width: '100%'}}>
+    <div style={{position: 'relative'}}>
+      <img src="static/liberal-board.png" style={{width: '100%'}} />
+      { liberalPolicies.length >= 1 ?
+        <img src="static/liberal-policy.png" style={{position: 'absolute', left: '16.5%', top: '24%', width: '13%' }}/> : null }
+      { liberalPolicies.length >= 2 ?
+        <img src="static/liberal-policy.png" style={{position: 'absolute', left: '30.1%', top: '24%', width: '13%' }}/> : null }
+      { liberalPolicies.length >= 3 ?
+        <img src="static/liberal-policy.png" style={{position: 'absolute', left: '43.8%', top: '24%', width: '13%' }}/> : null }
+      { liberalPolicies.length >= 4 ?
+        <img src="static/liberal-policy.png" style={{position: 'absolute', left: '57.2%', top: '24%', width: '13%' }}/> : null }
+      { liberalPolicies.length >= 5 ?
+        <img src="static/liberal-policy.png" style={{position: 'absolute', left: '70.9%', top: '24%', width: '13%' }}/> : null }
+    </div>
+    <div style={{position: 'relative'}}>
+      <img src="static/fascist-board-56.png" style={{width: '100%'}} />
+      { fascistPolicies.length >= 1 ?
+        <img src="static/fascist-policy.png" style={{position: 'absolute', left: '9.5%', top: '24%', width: '13%' }}/> : null }
+      { fascistPolicies.length >= 2 ?
+        <img src="static/fascist-policy.png" style={{position: 'absolute', left: '23.1%', top: '24%', width: '13%' }}/> : null }
+      { fascistPolicies.length >= 3 ?
+        <img src="static/fascist-policy.png" style={{position: 'absolute', left: '36.8%', top: '24%', width: '13%' }}/> : null }
+      { fascistPolicies.length >= 4 ?
+        <img src="static/fascist-policy.png" style={{position: 'absolute', left: '50.2%', top: '24%', width: '13%' }}/> : null }
+      { fascistPolicies.length >= 5 ?
+        <img src="static/fascist-policy.png" style={{position: 'absolute', left: '63.9%', top: '24%', width: '13%' }}/> : null }
+      { fascistPolicies.length >= 6 ?
+        <img src="static/fascist-policy.png" style={{position: 'absolute', left: '77.9%', top: '24%', width: '13%' }}/> : null }
+    </div>
+  </div>;
+}
+
 const Bird = () => {
   return <svg height="39.2" width="43.2" viewBox="0 0 21.6 19.6" style={{transform: `rotate(-90deg)`}}>
     <path d="M21.4,18.6l-0.4-1c0-0.1,0-0.1,0-0.2l-2.1-4.7l0,0l-0.3-0.6l-0.6-1.2c-0.2-0.5-0.5-0.9-0.9-1.2l0,0l-4-2.5 c0-0.2,0-0.4-0.1-0.6l3.7-1.3L18,4.5l3.1-4l-0.3-0.5l-4.2,2.5l-0.8,0.2l-2.6,0.6c0.2-0.4,0.4-0.8,0.6-1.2c0-0.9-0.7-1.6-1.6-1.5 c0,0,0,0,0,0c-0.2,0-0.4,0-0.6,0.1l0,0l-2,0.3l1,0.8L8.4,2.2C7.3,2.4,6.4,3.3,6,4.4L5.4,6.6l0,0C5.3,6.8,5.2,7.1,5.2,7.4l-2,0.2 c-0.1,0-0.2,0-0.4,0c0,0,0,0-0.1,0.1l-1,0.1l-1.8,2.2v1.6h0.2c0,0.2,0,0.3,0.2,0.4l1-0.1l-1,0.6C0.1,12.7,0,12.9,0,13.2l0,0l0.3,1.2 c0,0.1,0,0.3,0.1,0.4l0,0h0.1c0,0,0.1,0,0.1,0l1.4,0.4L2,14.9c0.1-0.1,0.3-0.1,0.4-0.2L6,11.1l2-1.9l0.7,1.5 c0.1,0.3,0.3,0.5,0.6,0.5l0.3,0.3L10,12c0.1,0.3,0.5,0.5,0.9,0.4c0,0,0.1,0,0.1-0.1l0,0l0.4,0.8c0.2,0.4,0.7,0.6,1.2,0.4l0.3,0.2 l0.3,0.6c0.2,0.3,0.6,0.5,0.9,0.3l0.8,0.6l0.1,0.2c0.1,0.2,0.3,0.3,0.5,0.3l0.6,0.5l2.3,1.9l1.8,1.4c0.4,0.3,0.8,0.2,1.1-0.2 C21.4,19,21.4,18.8,21.4,18.6z"></path>
@@ -671,11 +691,12 @@ const Bird = () => {
 class BoarderContainer extends React.Component<{|
   renderContent?: ({ width: number, height: number}) => React.Node,
   children?: void,
+  showPolicyStatus: boolean,
   state: $ReadOnly<{|
     game: Game | void,
     isDebug: boolean,
     isHand: boolean,
-    playerId: string | void
+    playerId: string | void,
   |}>,
 |}, any> {
   constructor() {
@@ -702,6 +723,9 @@ class BoarderContainer extends React.Component<{|
       overflow: 'hidden',
       position: 'absolute',
     }}>
+      { this.props.state.game && this.props.showPolicyStatus ? <div style={{position: 'absolute', left: 10, top: 10, width: '20%'}}>
+        <PolicyStatus game={this.props.state.game} />
+      </div> : null}
       { this.props.renderContent ? this.props.renderContent({width:  this.state.width, height: this.state.height}) : null }
       {this.props.state.isDebug ?
         <div style={{left: 0, top: 0, width: 300, height: '100%', position: 'absolute', overflow: 'scroll'}}>
