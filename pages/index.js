@@ -361,11 +361,13 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1>Everyone view your role!</h1>
+            <audio src="static/view-role.mp3" autoPlay />
             <div>
               {game.players.map(player => {
-                return <div>
+                return (<div>
                   <h2>{`${player.seenRole ? '🤭' : '🙈'} ${player.name}`}</h2>
-                </div>;
+                  { player.seenRole ? <audio src="static/splunk.mp3" autoPlay /> : null }
+                </div>);
               })}
             </div>
           </div>
@@ -385,6 +387,7 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> Election </h1>
+            <audio src="static/election.mp3" autoPlay />
             <h2>President candidate {presidentCandidate.name}, please select your chancellor candidate.</h2>
           </div>
         </div>;
@@ -623,7 +626,10 @@ function Board({state}: {| state: State |}) {
       <div style={{flexGrow: 1}}><SecretHitlerLogo /></div>
       <div style={{flexGrow: 2, textAlign: 'center', fontSize: 50}}>
         { canJoin(state) ?
-          <div>{canStartMessage(state)}</div>
+          <div>
+            {canStartMessage(state)}
+            {canStart({game}) ? <audio src="static/can-start.mp3" autoPlay /> : null}
+          </div>
         : <div> We're full! Someone start the game.</div> }
       </div>
       <div style={{flexGrow: 4}}>
@@ -632,9 +638,10 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1, fontSize: 50}}>
             <div>
               { game.players.map(player => {
-                return <div>
+                return <div key={player.id}>
                   <Bird />
                   <span> </span>
+                  <audio src="static/splunk.mp3" autoPlay />
                   {player.name}
                 </div>;
               })}

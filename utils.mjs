@@ -63,6 +63,22 @@ export function liberalsWon(game /*: Game */) /*: boolean */ {
   ].indexOf(game.phase.name) !== -1;
 }
 
+export function explainVictory(game /*: Game */) /*: string */ {
+  if (game.phase.name === 'FASCISTS_WIN_WITH_HITLER_CHANCELLOR') {
+    return 'The Fascists won by electing Hitler to Chancellor';
+  }
+  if (game.phase.name === 'FASCISTS_WIN_BY_POLICY') {
+    return 'The Fascists won by getting 6 Fascist policies enacted';
+  }
+  if (game.phase.name === 'LIBERALS_WIN_BY_POLICY') {
+    return 'The Liberals won by getting 5 policies enacted';
+  }
+  if (game.phase.name === 'LIBERALS_WIN_BY_HITLER_ASSASSINATION') {
+    return 'The liberals won assassinating hitler';
+  }
+  return '';
+}
+
 export function playerRight(players /*: $ReadOnlyArray<Player> */, match /*: (Player) => boolean */) /*: Player */ {
   const index = players.findIndex(match);
   const lastIndex = players.length - 1;
