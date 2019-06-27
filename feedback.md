@@ -1,5 +1,5 @@
-* need to tell players who the ticket is
-* no response about what happened.
-* "discard" UI is confusing.
-* might be cool to show history
-* show user that they voted
+* Might be cool to show history
+* Don’t allow change name
+* Interface should show circle made order obvious
+* Change their seating arrangement to make circle ⭕️
+* It’s time to vote!
