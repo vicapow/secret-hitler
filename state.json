@@ -1,0 +1,121 @@
+{
+  "isStarted": false,
+  "phase": {
+    "timestamp": 1562045403570
+  },
+  "isVoting": false,
+  "failedVotes": 0,
+  "players": [
+    {
+      "id": "5",
+      "name": "Player 1",
+      "revealRole": false,
+      "seenRole": false,
+      "killed": false
+    }
+  ],
+  "policies": [
+    {
+      "id": "17",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "2",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "9",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "15",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "4",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "16",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "12",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "5",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "8",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "7",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "14",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "1",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "11",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "6",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "3",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "13",
+      "type": "liberal",
+      "location": "deck",
+      "timestamp": 1562045403570
+    },
+    {
+      "id": "10",
+      "type": "fascist",
+      "location": "deck",
+      "timestamp": 1562045403570
+    }
+  ]
+}

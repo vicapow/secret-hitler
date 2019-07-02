@@ -5,9 +5,9 @@ import socketIO from 'socket.io';
 import http from 'http';
 import express from 'express';
 import next from 'next';
-import { playerSetup, policies } from './rules.mjs';
+import { playerSetup } from './rules.mjs';
 import originalUpdate from './game.mjs';
-import { shuffle } from './utils.mjs';
+import { shuffle, freshGame } from './utils.mjs';
 /* :: import type { Game, Player, Phase, Message } from './types.mjs'; */
 
 const app = express();
@@ -29,37 +29,11 @@ function update(state, message, now) {
   return nextState;
 }
 
-function createPolicies(policies, now) {
-  const cards = [];
-  let id = 0;
-  for (let i = 0; i < policies.fascist; i++) {
-    id = id + 1;
-    cards.push({ id: String(id), type: 'fascist', location: 'deck', timestamp: now });
-  }
-  for (let i = 0; i < policies.liberal; i++) {
-    id = id + 1;
-    cards.push({ id: String(id), type: 'liberal', location: 'deck', timestamp: now });
-  }
-  return cards;
-}
-
 function initGame(now /*: number */)/*: Game */ {
   try {
     return JSON.parse(fs.readFileSync('./state.json').toString());
   } catch (e) {
-    return {
-      isStarted: false,
-      hitler: undefined,
-      phase: { name: undefined, timestamp: now },
-      isVoting: false,
-      failedVotes: 0,
-      presidentCandidate: undefined,
-      chancellorCandidate: undefined,
-      electedPresident: undefined,
-      electedChancellor: undefined,
-      players: [],
-      policies: shuffle(createPolicies(policies, now))
-    };
+    return freshGame();
   }
 }
 

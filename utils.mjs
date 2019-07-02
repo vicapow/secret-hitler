@@ -1,6 +1,7 @@
 // @flow
 
 /* :: import type { Game, Policy, Player } from './types.mjs'; */
+import { policies } from './rules.mjs';
 
 export function assert(condition /* : boolean | void */) {
   if (!condition) {
@@ -79,6 +80,22 @@ export function explainVictory(game /*: Game */) /*: string */ {
   return '';
 }
 
+export function explainVictoryAudio(game /*: Game */) /* : string */ {
+  if (game.phase.name === 'FASCISTS_WIN_WITH_HITLER_CHANCELLOR') {
+    return 'static/fascists-won-with-hitler-elected.mp3';
+  }
+  if (game.phase.name === 'FASCISTS_WIN_BY_POLICY') {
+    return 'static/fascists-won-by-policy.mp3';
+  }
+  if (game.phase.name === 'LIBERALS_WIN_BY_POLICY') {
+    return 'static/liberals-won-by-policy.mp3';
+  }
+  if (game.phase.name === 'LIBERALS_WIN_BY_HITLER_ASSASSINATION') {
+    return 'static/liberals-won-by-hitler-kill.mp3';
+  }
+  return '';
+}
+
 export function playerRight(players /*: $ReadOnlyArray<Player> */, match /*: (Player) => boolean */) /*: Player */ {
   const index = players.findIndex(match);
   const lastIndex = players.length - 1;
@@ -87,4 +104,34 @@ export function playerRight(players /*: $ReadOnlyArray<Player> */, match /*: (Pl
   }
   // wrap around
   return players[0];
+}
+
+export function freshGame(now /*: number */) /*: Game */ {
+  return {
+      isStarted: false,
+      hitler: undefined,
+      phase: { name: undefined, timestamp: now },
+      isVoting: false,
+      failedVotes: 0,
+      presidentCandidate: undefined,
+      chancellorCandidate: undefined,
+      electedPresident: undefined,
+      electedChancellor: undefined,
+      players: [],
+      policies: shuffle(createPolicies(policies, now))
+    }
+}
+
+function createPolicies(policies, now) {
+  const cards = [];
+  let id = 0;
+  for (let i = 0; i < policies.fascist; i++) {
+    id = id + 1;
+    cards.push({ id: String(id), type: 'fascist', location: 'deck', timestamp: now });
+  }
+  for (let i = 0; i < policies.liberal; i++) {
+    id = id + 1;
+    cards.push({ id: String(id), type: 'liberal', location: 'deck', timestamp: now });
+  }
+  return cards;
 }

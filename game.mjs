@@ -3,7 +3,7 @@
 // This is the game state machine. The game state can only be changed through `event` messages.
 
 import { playerSetup, policies } from './rules.mjs';
-import { assert, pluckRandom, pluck, shuffle, latestPolicy, playerRight } from './utils.mjs';
+import { assert, pluckRandom, pluck, shuffle, latestPolicy, playerRight, isOver, freshGame } from './utils.mjs';
 /* :: import type { Game, Message, Player, Policy } from './types'; */
 
 export default function update(game /* : Game */, message /* : Message */, now /* : number */) /* : Game */ {
@@ -112,6 +112,10 @@ export default function update(game /* : Game */, message /* : Message */, now /
       };
     }
   } else if (message.type === 'CLOCK_TICK') {
+    if (
+      isOver(game) && (now - game.phase.timestamp > 10000)) {
+        game = freshGame(now);
+    }
     if (
       game.phase.name === 'REVEAL_TICKET_RESULTS' &&
       (now - game.phase.timestamp > 4000)

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import io from 'socket.io-client';
 import type { Message, Game } from '../types.mjs';
-import { assert, latestPolicy, isOver, fascistsWon, explainVictory } from '../utils.mjs';
+import { assert, latestPolicy, isOver, fascistsWon, explainVictory, explainVictoryAudio } from '../utils.mjs';
 
 type State = $ReadOnly<{|
   isHand: boolean,
@@ -206,15 +206,22 @@ function Hand({
     </div> : null}
     <div>
       <span>name: </span>
-      <input type="text" onChange={onUpdateName} value={player.name} style={{
+      {game.isStarted ? <div style={{
         width: 'calc(100% - 9px)',
         fontSize: 24,
         border: 'gray',
         borderStyle: 'dotted',
-      }} />
+      }}>
+        {player.name}
+      </div> : <input type="text" onChange={onUpdateName} value={player.name} style={{
+        width: 'calc(100% - 9px)',
+        fontSize: 24,
+        border: 'gray',
+        borderStyle: 'dotted',
+      }} />}
     </div>
     { role !== undefined ? <div>
-      <HandButton onClick={onRevealRole}>Reveal role</HandButton>
+      <HandButton onClick={onRevealRole}>{ player.revealRole ? `Hide role` : `Reveal role`}</HandButton>
       { player.revealRole ? <div>
         <span>{getRoleMessage(player, game)}</span>
         <img style={{width: '100%'}} src={player.id === game.hitler ? 'static/hitler.png' : `static/${role}.png`} />
@@ -336,6 +343,7 @@ function Board({state}: {| state: State |}) {
             <div style={{flexGrow: 2, textAlign: 'center'}}>
               <h1>{fascistsWon(game) ? `Fascists` : `Liberals`} Won!</h1>
               <p>{explainVictory(game)}</p>
+              <audio src={explainVictoryAudio(game)} autoPlay/>
             </div>
             <div style={{flexGrow: 1, textAlign: 'center'}}>
               <div style={{fontSize: 24, display: 'flex', flexDirection: 'row', width: '100%'}}>
@@ -363,10 +371,13 @@ function Board({state}: {| state: State |}) {
             <h1>Everyone view your role!</h1>
             <audio src="static/view-role.mp3" autoPlay />
             <div>
-              {game.players.map(player => {
+              {game.players.map((player, index) => {
                 return (<div>
                   <h2>{`${player.seenRole ? '🤭' : '🙈'} ${player.name}`}</h2>
-                  { player.seenRole ? <audio src="static/splunk.mp3" autoPlay /> : null }
+                  { player.seenRole && index % 4 === 0 ? <audio src="static/splunk.mp3" autoPlay /> : null }
+                  { player.seenRole && index % 4 === 1 ? <audio src="static/drump-tap.mp3" autoPlay /> : null }
+                  { player.seenRole && index % 4 === 2 ? <audio src="static/cork.mp3" autoPlay /> : null }
+                  { player.seenRole && index % 4 === 3 ? <audio src="static/kapuka.mp3" autoPlay /> : null }
                 </div>);
               })}
             </div>
@@ -403,11 +414,21 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> Vote on ticket </h1>
+            { game.phase.timestamp + 3000 > Date.now() ?
+              <audio src="static/vote-on-ticket.mp3" autoPlay /> : null }
             <h2> President Candidate ----- {presidentCandidate ? presidentCandidate.name : ''} </h2>
             <h2> Chancellor Candidate ----- {chancellorCandidate ? chancellorCandidate.name : ''} </h2>
             <div>
-              {game.players.filter(player => !player.killed).map(player => {
-                return <div>{player.name} {player.vote !== undefined ? '🗳️' : ``}</div>
+              {game.players.filter(player => !player.killed).map((player, index) => {
+                return <div>
+                  {player.name} {player.vote !== undefined ? '🗳️' : ``}
+                </div>
+              })}
+              {game.players.filter(player => !player.killed && player.vote !== undefined).map((player, index) => {
+                return <div>
+                  {index === 0 && game.phase.timestamp + 2000 < Date.now() ? <audio src="static/oh-theres-one.mp3" autoPlay /> : ''}
+                  {index !== 0 && game.phase.timestamp + 2000 < Date.now() ? <audio src="static/splunk.mp3" autoPlay /> : ''}
+                </div>;
               })}
             </div>
           </div>
@@ -427,6 +448,9 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1}}></div>
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1 style={{fontSize: 100}}> { win ? 'Success' : 'Failure' }</h1>
+            {
+              <audio src={win ? "static/success.mp3" : "static/failed.mp3"} autoPlay />
+            }
             <div style={{display: 'flex', flexDirection: 'row', width: '100%', height: '100%'}}>
               <div style={{flexGrow: 1}}></div>
               <div style={{textAlign: 'left'}}>
@@ -471,6 +495,7 @@ function Board({state}: {| state: State |}) {
                       <img src="static/policy.png" style={{ height: 80}} />
                       <img src="static/policy.png" style={{ height: 80}} />
                       <img src="static/policy.png" style={{ height: 80}} />
+                      <audio src="static/president-discard.mp3" autoPlay />
                     </div>
                    : null}
                   </div>
@@ -488,6 +513,7 @@ function Board({state}: {| state: State |}) {
                    {game.phase.name === 'CHANCELLOR_POLICY_TURN' ? <div>
                       <img src="static/policy.png" style={{ height: 80}} />
                       <img src="static/policy.png" style={{ height: 80}} />
+                      <audio src="static/chancellor-play-card.mp3" autoPlay />
                     </div>
                    : null}
                   </div>
@@ -521,6 +547,7 @@ function Board({state}: {| state: State |}) {
           <div style={{flexGrow: 1, textAlign: 'center'}}>
             <h1> Reveal new policy! </h1>
             <img src={`static/${policy.type}-policy.png`} />
+            <audio src={`static/${policy.type}-revealed.mp3`} autoPlay />
           </div>
           <div style={{flexGrow: 1}}></div>
         </div>;
@@ -568,6 +595,7 @@ function Board({state}: {| state: State |}) {
             <div style={{ display: 'table', width: '100%', height: '100%' }}>
               <div style={{display: 'table-cell', verticalAlign: 'middle', paddingLeft: 200, paddingRight: 200, textAlign: 'center' }}>
                 <h1 style={{fontSize: 50}}>President is examining the top 3 cards of the deck...</h1>
+                <audio src="static/review-top-three-cards.mp3" autoPlay />
               </div>
             </div>
           </div>
@@ -624,6 +652,7 @@ function Board({state}: {| state: State |}) {
   return <BoarderContainer showPolicyStatus={false} state={state} renderContent={() => {
     return <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%', background: 'white'}}>
       <div style={{flexGrow: 1}}><SecretHitlerLogo /></div>
+      <audio src="static/intro.mp3" autoPlay />
       <div style={{flexGrow: 2, textAlign: 'center', fontSize: 50}}>
         { canJoin(state) ?
           <div>
