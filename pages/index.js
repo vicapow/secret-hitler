@@ -186,14 +186,14 @@ function Hand({
   }
   const role = player.role;
   if (player.killed) {
-    return  <div style={{ fontFamily: 'Futura', margin: 14, fontSize: 24 }}>
+    return  <div style={{ fontFamily: 'arial', margin: 14, fontSize: 42 }}>
       <h1> You're dead </h1>
       <p> Please wait quietly until the end of the game. Definitely not reveal your identity or give any hits! </p>
     </div>;
   }
   const presidentCandidate = getPlayer(game.presidentCandidate || '', game);
   const chancellorCandidate = getPlayer(game.chancellorCandidate || '', game);
-  return <div style={{ fontFamily: 'Futura', margin: 14, fontSize: 24 }}>
+  return <div style={{ fontFamily: 'arial', margin: 14, fontSize: 42 }}>
       <style global jsx>{`
       body {
         margin: 0;
@@ -208,14 +208,14 @@ function Hand({
       <span>name: </span>
       {game.isStarted ? <div style={{
         width: 'calc(100% - 9px)',
-        fontSize: 24,
+        fontSize: 42,
         border: 'gray',
         borderStyle: 'dotted',
       }}>
         {player.name}
       </div> : <input type="text" onChange={onUpdateName} value={player.name} style={{
         width: 'calc(100% - 9px)',
-        fontSize: 24,
+        fontSize: 42,
         border: 'gray',
         borderStyle: 'dotted',
       }} />}
@@ -753,7 +753,7 @@ class BoarderContainer extends React.Component<{|
   render() {
     return <div style={{
       margin: 0,
-      fontFamily: 'Futura',
+      fontFamily: 'arial',
       width: window.innerWidth,
       height: window.innerHeight,
       overflow: 'hidden',

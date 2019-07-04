@@ -98,6 +98,11 @@ io.on('connection', socket => {
 });
 
 nextApp.prepare().then(() => {
+  app.get('/restart', (req, res) => {
+    game = freshGame(Date.now());
+    broadcastGameState(game);
+    res.redirect('/');
+  });
   app.get('*', (req, res) => {
     return nextHandler(req, res);
   });
