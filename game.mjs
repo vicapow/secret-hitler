@@ -175,7 +175,7 @@ export default function update(game /* : Game */, message /* : Message */, now /
           },
           failedVotes: game.failedVotes + 1,
           presidentCandidate: playerRight(
-            game.players,
+            game.players.filter(player => !player.killed),
             player => player.id === game.presidentCandidate
           ).id,
           chancellorCandidate: undefined
