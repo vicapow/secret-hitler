@@ -17,7 +17,7 @@ const removeWhenLeavingPreGame = false;
 
 const port = 3000;
 const dev = process.env.NODE_ENV !== 'production';
-const nextApp = next({dev});
+const nextApp = next({ dev });
 const nextHandler = nextApp.getRequestHandler();
 
 let game /*: Game */ = initGame(Date.now());
@@ -29,11 +29,11 @@ function update(state, message, now) {
   return nextState;
 }
 
-function initGame(now /*: number */)/*: Game */ {
+function initGame(now /*: number */) /*: Game */ {
   try {
     return JSON.parse(fs.readFileSync('./state.json').toString());
   } catch (e) {
-    return freshGame();
+    return freshGame(now);
   }
 }
 
@@ -46,7 +46,7 @@ function broadcastGameState(game /*: Game */) {
 }
 
 setInterval(() => {
-  game = update(game, {type: 'CLOCK_TICK'}, Date.now());
+  game = update(game, { type: 'CLOCK_TICK' }, Date.now());
   broadcastGameState(game);
 }, 1000);
 
@@ -57,7 +57,6 @@ function getRandomUnmatchedPlayer(game) {
 }
 
 io.on('connection', socket => {
-
   console.log('a client connected');
 
   broadcastGameState(game);
@@ -107,10 +106,8 @@ nextApp.prepare().then(() => {
     return nextHandler(req, res);
   });
   console.log('listen to server');
-  server.listen(port, (err) => {
+  server.listen(port, err => {
     if (err) throw err;
     console.log(`> Ready on http://localhost:${port}`);
   });
 });
-
-
