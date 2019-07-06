@@ -314,14 +314,23 @@ function Hand({
               })}
           </div>
         </div>
-      ) : game.phase.name === 'ELECTION_START' ? <div>
-        {(() => {
-          const presidentCandidate = game.players.find(player => player.id === game.presidentCandidate);
-          if (!presidentCandidate) return null;
+      ) : game.phase.name === 'ELECTION_START' ? (
+        <div>
+          {(() => {
+            const presidentCandidate = game.players.find(
+              player => player.id === game.presidentCandidate
+            );
+            if (!presidentCandidate) return null;
 
-          return <div className="text-center text-4xl">Presidential candidate <PlayerLabel>{presidentCandidate.name}</PlayerLabel> is selecting their Chancellor. Please nudge them if they are too slow.</div>
-        })()}
-      </div> : null }
+            return (
+              <div className="text-center text-4xl">
+                Presidential candidate <PlayerLabel>{presidentCandidate.name}</PlayerLabel> is
+                selecting their Chancellor. Please nudge them if they are too slow.
+              </div>
+            );
+          })()}
+        </div>
+      ) : null}
       {game.phase.name === 'VOTE_ON_TICKET' ? (
         <div>
           <h1 className="text-center uppercase text-4xl">Vote!</h1>
@@ -410,7 +419,9 @@ function Hand({
                 );
               })}
           </div>
-          <HandButton onClick={() => doneExaminingDeck()}>Ok, I remember them. Continue game!</HandButton>
+          <HandButton onClick={() => doneExaminingDeck()}>
+            Ok, I remember them. Continue game!
+          </HandButton>
         </div>
       ) : null}
       {game.phase.name === 'PRESIDENT_KILL_START' && game.electedPresident === playerId ? (
@@ -512,7 +523,7 @@ function Board({ state }: {| state: State |}) {
                   Everyone view your role! (But don't reveal it to others)
                 </h1>
                 <audio src="static/view-role.mp3" autoPlay />
-                <div className="flex flex-col items-center  mt-2">
+                <div className="flex flex-col items-center mt-2">
                   {game.players.map((player, index) => {
                     return (
                       <React.Fragment>
@@ -856,8 +867,8 @@ function Board({ state }: {| state: State |}) {
                   <div>
                     <h1 className="text-center">
                       Too Many Fascist Policies! <br />
-                      President <PlayerLabel>{president.name}</PlayerLabel>, has a special power to examine the top 3 cards
-                      in the deck
+                      President <PlayerLabel>{president.name}</PlayerLabel>, has a special power to
+                      examine the top 3 cards in the deck
                     </h1>
                     <audio src="static/review-top-three-cards.mp3" autoPlay />
                   </div>
@@ -950,21 +961,22 @@ function Board({ state }: {| state: State |}) {
                 <div> We're full! Someone start the game.</div>
               )}
             </div>
-            <div>
-              <div className="mt-8 p-8">
+            <div className="flex flex-row items-center justify-center">
+
                 {game.players.map(player => {
                   return (
-                    <div key={player.id} className="flex">
-                      <div className="mr-8 flex items-center">
-                        <Bird />
+                    <div key={player.id} className="m-4 p-8 rounded-lg shadow-lg bg-gray-200">
+                      <div className="flex flex-col items-center">
+                        <div className="mb-2">
+                          <Bird />
+                        </div>
+                        <audio src="static/splunk.mp3" autoPlay />
+                        <PlayerLabel>{player.name}</PlayerLabel>
                       </div>
-                      <span> </span>
-                      <audio src="static/splunk.mp3" autoPlay />
-                      {player.name}
                     </div>
                   );
                 })}
-              </div>
+    
             </div>
           </div>
         );
@@ -1040,7 +1052,7 @@ function PolicyStatus({ game }: { game: Game }) {
 
 const Bird = () => {
   return (
-    <svg height="39.2" width="43.2" viewBox="0 0 21.6 19.6" className="fill-current text-red-100">
+    <svg height="48" width="48" viewBox="0 0 21.6 19.6" className="fill-current text-gray-800">
       <path d="M21.4,18.6l-0.4-1c0-0.1,0-0.1,0-0.2l-2.1-4.7l0,0l-0.3-0.6l-0.6-1.2c-0.2-0.5-0.5-0.9-0.9-1.2l0,0l-4-2.5 c0-0.2,0-0.4-0.1-0.6l3.7-1.3L18,4.5l3.1-4l-0.3-0.5l-4.2,2.5l-0.8,0.2l-2.6,0.6c0.2-0.4,0.4-0.8,0.6-1.2c0-0.9-0.7-1.6-1.6-1.5 c0,0,0,0,0,0c-0.2,0-0.4,0-0.6,0.1l0,0l-2,0.3l1,0.8L8.4,2.2C7.3,2.4,6.4,3.3,6,4.4L5.4,6.6l0,0C5.3,6.8,5.2,7.1,5.2,7.4l-2,0.2 c-0.1,0-0.2,0-0.4,0c0,0,0,0-0.1,0.1l-1,0.1l-1.8,2.2v1.6h0.2c0,0.2,0,0.3,0.2,0.4l1-0.1l-1,0.6C0.1,12.7,0,12.9,0,13.2l0,0l0.3,1.2 c0,0.1,0,0.3,0.1,0.4l0,0h0.1c0,0,0.1,0,0.1,0l1.4,0.4L2,14.9c0.1-0.1,0.3-0.1,0.4-0.2L6,11.1l2-1.9l0.7,1.5 c0.1,0.3,0.3,0.5,0.6,0.5l0.3,0.3L10,12c0.1,0.3,0.5,0.5,0.9,0.4c0,0,0.1,0,0.1-0.1l0,0l0.4,0.8c0.2,0.4,0.7,0.6,1.2,0.4l0.3,0.2 l0.3,0.6c0.2,0.3,0.6,0.5,0.9,0.3l0.8,0.6l0.1,0.2c0.1,0.2,0.3,0.3,0.5,0.3l0.6,0.5l2.3,1.9l1.8,1.4c0.4,0.3,0.8,0.2,1.1-0.2 C21.4,19,21.4,18.8,21.4,18.6z" />
     </svg>
   );
