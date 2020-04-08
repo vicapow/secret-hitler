@@ -1,10 +1,11 @@
 import React from 'react';
 import Document, { Head, Main, NextScript } from 'next/document';
+import { Html } from 'next/dist/pages/_document';
 
 export default class CustomDocument extends Document {
   render() {
     return (
-      <html lang="en-US" className="h-full">
+      <Html lang="en-US" className="h-full">
         <Head>
           <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet" />
           <link
@@ -13,21 +14,10 @@ export default class CustomDocument extends Document {
           />
         </Head>
         <body className="flex flex-col h-full">
-          <style jsx global>{`
-            #__next {
-              height: 100%;
-            }
-
-            body,
-            html {
-              background-color: #e16a57;
-              font-family: 'Germania One', sans-serif;
-            }
-          `}</style>
           <Main />
           <NextScript />
         </body>
-      </html>
+      </Html>
     );
   }
 }

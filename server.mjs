@@ -16,6 +16,7 @@ const io = socketIO(server);
 const removeWhenLeavingPreGame = false;
 
 const port = 3000;
+console.log(process.env.NODE_ENV)
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const nextHandler = nextApp.getRequestHandler();
@@ -96,11 +97,24 @@ io.on('connection', socket => {
   });
 });
 
+function makeid(length) {
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < length; i++ ) {
+     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 nextApp.prepare().then(() => {
   app.get('/restart', (req, res) => {
     game = freshGame(Date.now());
     broadcastGameState(game);
     res.redirect('/');
+  });
+  app.get('/join', (req, res) => {
+    res.redirect(`/?isHand=true&playerId=${makeid(6)}`);
   });
   app.get('*', (req, res) => {
     return nextHandler(req, res);
